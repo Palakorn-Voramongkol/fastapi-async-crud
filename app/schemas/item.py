@@ -1,5 +1,6 @@
-from pydantic import BaseModel, constr, ConfigDict
+from pydantic import BaseModel, constr, ConfigDict, Field
 from typing import Optional
+from app.utils.constants import MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, MIN_DESCRIPTION_LENGTH, MIN_NAME_LENGTH
 
 class ItemCreate(BaseModel):
     """
@@ -14,11 +15,9 @@ class ItemCreate(BaseModel):
     """
     
     # Ensures that both 'name' and 'description' are non-empty strings
-    name: constr(min_length=1)  # name must be at least 1 character
-    description: constr(min_length=1)  # description must be at least 1 character
-
-    # Model configuration for allowing arbitrary types if needed
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    # Enforce min and max length on name and description using Field
+    name: str = Field(..., min_length=MIN_NAME_LENGTH, max_length=MAX_NAME_LENGTH)
+    description: str = Field(..., min_length=MIN_DESCRIPTION_LENGTH, max_length=MAX_DESCRIPTION_LENGTH)
 
 
 class ItemResponse(BaseModel):
@@ -51,5 +50,6 @@ class ItemUpdate(BaseModel):
         description (Optional[str]): The updated description of the item (optional, can be omitted).
     """
 
-    name: Optional[str] = None
-    description: Optional[str] = None
+    # These are optional fields, but length constraints are enforced if provided
+    name: Optional[str] = Field(None, min_length=MIN_NAME_LENGTH, max_length=MAX_NAME_LENGTH)
+    description: Optional[str] = Field(None, min_length=MIN_DESCRIPTION_LENGTH, max_length=MAX_DESCRIPTION_LENGTH)
