@@ -2,16 +2,17 @@ from fastapi import FastAPI, HTTPException
 from app.schemas import ItemCreate, ItemResponse, ItemUpdate
 from app.crud import create_item, get_items, get_item_by_id, update_item, delete_item
 from app.database import init_db, close_db
+from contextlib import asynccontextmanager
 
-app = FastAPI()
-
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup event: Initialize the database
     await init_db()
-
-@app.on_event("shutdown")
-async def shutdown_event():
+    yield
+    # Shutdown event: Close the database connection
     await close_db()
+
+app = FastAPI(lifespan=lifespan)
 
 @app.post("/items", response_model=ItemResponse)
 async def create_item_endpoint(item: ItemCreate):
