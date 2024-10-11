@@ -2,21 +2,54 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class ItemCreate(BaseModel):
+    """
+    Pydantic model for creating a new item.
+
+    Attributes:
+        name (str): The name of the item to be created.
+        description (str): A detailed description of the item.
+    
+    Configuration:
+        model_config (ConfigDict): Configuration for Pydantic model. 
+                                   `arbitrary_types_allowed=True` allows arbitrary types (default: True).
+    """
+
     name: str
     description: str
 
-    # Include model_config only if you have specific configurations
-    # Remove arbitrary_types_allowed if not needed
+    # Model configuration for allowing arbitrary types if needed
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+
 class ItemResponse(BaseModel):
+    """
+    Pydantic model for returning an item in responses.
+
+    Attributes:
+        id (int): The unique identifier of the item.
+        name (str): The name of the item.
+        description (str): A detailed description of the item.
+    
+    Configuration:
+        model_config (ConfigDict): Configuration to enable populating the model directly from database attributes.
+    """
+
     id: int
     name: str
     description: str
 
-    # Replace class-based Config with model_config
+    # Model configuration to enable attribute population from DB models
     model_config = ConfigDict(from_attributes=True)
 
+
 class ItemUpdate(BaseModel):
+    """
+    Pydantic model for updating an existing item.
+
+    Attributes:
+        name (Optional[str]): The updated name of the item (optional, can be omitted).
+        description (Optional[str]): The updated description of the item (optional, can be omitted).
+    """
+
     name: Optional[str] = None
     description: Optional[str] = None
