@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from app.schemas import ItemCreate, ItemResponse, ItemUpdate
 from app.crud import create_item, get_items, get_item_by_id, update_item, delete_item
 from app.database import init_db, close_db
@@ -16,7 +16,15 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/items", response_model=ItemResponse)
 async def create_item_endpoint(item: ItemCreate):
-    return await create_item(item.name, item.description)
+    try:
+        created_item = await create_item(item.name, item.description)
+        return created_item
+    except Exception as e:
+        # Handle general exceptions, you could also handle specific exceptions like IntegrityError
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to create item: {str(e)}"
+        )
 
 @app.get("/items", response_model=list[ItemResponse])
 async def read_items():
