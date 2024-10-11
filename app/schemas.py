@@ -5,6 +5,8 @@ class ItemCreate(BaseModel):
     name: str
     description: str
 
+    # Include model_config only if you have specific configurations
+    # Remove arbitrary_types_allowed if not needed
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 class ItemResponse(BaseModel):
@@ -12,8 +14,8 @@ class ItemResponse(BaseModel):
     name: str
     description: str
 
-    class Config:
-        from_attributes = True  # Updated from orm_mode
+    # Replace class-based Config with model_config
+    model_config = ConfigDict(from_attributes=True)
 
 class ItemUpdate(BaseModel):
     name: Optional[str] = None
