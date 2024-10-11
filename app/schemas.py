@@ -11,7 +11,7 @@ class ItemResponse(BaseModel):
     description: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode
 
 class ItemUpdate(BaseModel):
     name: Optional[str] = None
