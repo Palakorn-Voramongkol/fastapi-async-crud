@@ -36,11 +36,18 @@ async def update_item_endpoint(id: int, item_update: ItemUpdate):
         raise HTTPException(status_code=404, detail="Item not found")
 
     # Update fields only if provided
-    updated_data = item_update.dict(exclude_unset=True)
+    updated_data = item_update.model_dump(exclude_unset=True)
     updated_item = await update_item(id, **updated_data)
     return updated_item
 
+
 @app.delete("/items/{id}")
 async def delete_item_endpoint(id: int):
+    # Check if the item exists
+    existing_item = await get_item_by_id(id)
+    if not existing_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # Proceed with deletion
     await delete_item(id)
     return {"message": "Item deleted successfully"}
