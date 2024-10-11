@@ -86,25 +86,26 @@ async def update_item(item_id: int, **updates) -> Optional[Item]:
         ValueError: If the name or description is empty.
         ItemError: If the update process fails unexpectedly.
     """
-    try:
-        item = await Item.get_or_none(id=item_id)
-        if item:
-            # Check if name or description is empty
-            if 'name' in updates and not updates['name']:
-                raise ValueError("Name cannot be empty.")
-            if 'description' in updates and not updates['description']:
-                raise ValueError("Description cannot be empty.")
-            
-            # Update only fields that are passed and are not None
+    item = await Item.get_or_none(id=item_id)
+    
+    if item:
+        # Check for empty 'name' or 'description' and raise ValueError
+        if 'name' in updates and not updates['name'].strip():
+            raise ValueError("Name cannot be empty.")
+        if 'description' in updates and not updates['description'].strip():
+            raise ValueError("Description cannot be empty.")
+
+        # Update only fields that are provided (not None)
+        try:
             for field, value in updates.items():
                 if value is not None:
                     setattr(item, field, value)
             await item.save()
             return item
-        else:
-            return None
-    except Exception as e:
-        raise ItemError(f"Failed to update item with ID {item_id}: {str(e)}")
+        except Exception as e:
+            raise ItemError(f"Failed to update item with ID {item_id}: {str(e)}")
+    else:
+        return None
 
 
 async def delete_item(item_id: int) -> bool:
