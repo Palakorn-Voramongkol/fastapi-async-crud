@@ -257,3 +257,123 @@ async def test_delete_item_from_db_not_found():
     """
     result = await delete_item(999)
     assert result is False
+
+@pytest.mark.asyncio
+async def test_create_item_empty_name():
+    """
+    Test Case: Attempt to create an item with an empty name.
+    
+    This test ensures that the `create_item` function raises a `ValueError`
+    when the name is empty.
+    
+    Steps:
+    1. Attempt to create an item with an empty name.
+    2. Assert that a `ValueError` is raised.
+    """
+    item_data = {"name": "", "description": "Test Description"}
+    with pytest.raises(ValueError):
+        await create_item(**item_data)
+
+@pytest.mark.asyncio
+async def test_create_item_empty_description():
+    """
+    Test Case: Attempt to create an item with an empty description.
+    
+    This test ensures that the `create_item` function raises a `ValueError`
+    when the description is empty.
+    
+    Steps:
+    1. Attempt to create an item with an empty description.
+    2. Assert that a `ValueError` is raised.
+    """
+    item_data = {"name": "Test Item", "description": ""}
+    with pytest.raises(ValueError):
+        await create_item(**item_data)
+
+@pytest.mark.asyncio
+async def test_bulk_create_items():
+    """
+    Test Case: Bulk creation of items.
+    
+    This test ensures that a large number of items can be created in the database
+    without errors, and that each item is assigned a unique ID.
+    
+    Steps:
+    1. Create 100 items using `create_item`.
+    2. Retrieve all items and assert that 100 items are successfully created.
+    """
+    num_items = 100  # Create 100 items
+    for i in range(num_items):
+        item_data = {"name": f"Item {i}", "description": f"Description {i}"}
+        await create_item(**item_data)
+
+    items = await get_items()
+    assert len(items) == num_items  # Ensure all items were created
+
+@pytest.mark.asyncio
+async def test_create_items_with_same_name():
+    """
+    Test Case: Create multiple items with the same name.
+    
+    This test verifies that creating multiple items with the same name does not 
+    cause any issues and that each item is still assigned a unique ID.
+    
+    Steps:
+    1. Create two items with the same name.
+    2. Assert that both items are created successfully and have different IDs.
+    """
+    item_data_1 = {"name": "Same Name", "description": "Description 1"}
+    item_1 = await create_item(**item_data_1)
+    
+    item_data_2 = {"name": "Same Name", "description": "Description 2"}
+    item_2 = await create_item(**item_data_2)
+    
+    assert item_1.id != item_2.id
+    assert item_1.name == item_2.name
+
+@pytest.mark.asyncio
+async def test_delete_already_deleted_item():
+    """
+    Test Case: Attempt to delete an already deleted item.
+    
+    This test ensures that once an item is deleted, attempting to delete it again 
+    returns the correct result (False).
+    
+    Steps:
+    1. Create an item.
+    2. Delete the item.
+    3. Attempt to delete the same item again and assert that the result is False.
+    """
+    item_data = {"name": "Item to be Deleted", "description": "To be deleted"}
+    created_item = await create_item(**item_data)
+
+    # Delete the item the first time
+    result = await delete_item(created_item.id)
+    assert result is True
+
+    # Try deleting the same item again
+    result = await delete_item(created_item.id)
+    assert result is False
+
+@pytest.mark.asyncio
+async def test_update_item_invalid_data():
+    """
+    Test Case: Update an item with invalid data.
+    
+    This test verifies that attempting to update an item with an empty name or
+    description raises a `ValueError`.
+    
+    Steps:
+    1. Create an item.
+    2. Attempt to update the item with invalid data and assert that `ValueError` is raised.
+    """
+    item_data = {"name": "Valid Name", "description": "Valid Description"}
+    created_item = await create_item(**item_data)
+
+    # Try updating with an empty name
+    with pytest.raises(ValueError):
+        await update_item(created_item.id, name="")
+    
+    # Try updating with an empty description
+    with pytest.raises(ValueError):
+        await update_item(created_item.id, description="")

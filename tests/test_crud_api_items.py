@@ -310,3 +310,179 @@ async def test_delete_item_failure(monkeypatch):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Item not found"}
+
+
+@pytest.mark.asyncio
+async def test_create_item_empty_name():
+    """
+    Test Case: Attempt to create an item with an empty name.
+
+    This test ensures that the API returns a 422 status code when attempting to create
+    an item with an empty name.
+
+    Steps:
+    1. Send a POST request to create an item with an empty name.
+    2. Verify that the API responds with a 422 status code and the appropriate error message.
+    """
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/items/", json={"name": "", "description": "Test Description"})
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "loc": ["body", "name"],
+                "msg": "String should have at least 1 character",
+                "type": "string_too_short",
+                "ctx": {"min_length": 1},
+                "input": ""
+            }
+        ]
+    }
+
+
+
+@pytest.mark.asyncio
+async def test_create_item_empty_description():
+    """
+    Test Case: Attempt to create an item with an empty description.
+
+    This test ensures that the API returns a 422 status code when attempting to create
+    an item with an empty description.
+
+    Steps:
+    1. Send a POST request to create an item with an empty description.
+    2. Verify that the API responds with a 422 status code and the appropriate error message.
+    """
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/items/", json={"name": "Test Item", "description": ""})
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "loc": ["body", "description"],
+                "msg": "String should have at least 1 character",
+                "type": "string_too_short",
+                "ctx": {"min_length": 1},
+                "input": ""
+            }
+        ]
+    }
+
+
+
+@pytest.mark.asyncio
+async def test_update_item_not_found(monkeypatch):
+    """
+    Test Case: Attempt to update an item that doesn't exist.
+    
+    This test mocks the `get_item_by_id` function to simulate a non-existent item, 
+    then sends a PUT request to update the item. The API should return a 404 status code.
+    
+    Steps:
+    1. Monkeypatch `get_item_by_id` to simulate an item not found.
+    2. Send a PUT request to update the item.
+    3. Verify that the API responds with a 404 status code and the appropriate error message.
+    """
+    # Mock the get_item_by_id to simulate item not found
+    async def mock_get_item_by_id(item_id: int):
+        return None  # Simulate item not found
+
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "New Name", "description": "New Description"})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Item not found"}
+
+
+@pytest.mark.asyncio
+async def test_update_item_empty_name(monkeypatch):
+    """
+    Test Case: Attempt to update an item with an empty name.
+    
+    This test mocks the `get_item_by_id` function to simulate an existing item, 
+    and then sends a PUT request to update the item with an empty name. The API should return a 422 status code.
+    
+    Steps:
+    1. Monkeypatch `get_item_by_id` to simulate an existing item.
+    2. Send a PUT request to update the item with an empty name.
+    3. Verify that the API responds with a 422 status code and the appropriate error message.
+    """
+    # Mock the get_item_by_id to simulate item found
+    async def mock_get_item_by_id(item_id: int):
+        return {"id": item_id, "name": "Old Item", "description": "Old description"}
+
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "", "description": "Updated description"})
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Name cannot be empty"}
+
+
+@pytest.mark.asyncio
+async def test_update_item_empty_description(monkeypatch):
+    """
+    Test Case: Attempt to update an item with an empty description.
+    
+    This test mocks the `get_item_by_id` function to simulate an existing item, 
+    and then sends a PUT request to update the item with an empty description. The API should return a 422 status code.
+    
+    Steps:
+    1. Monkeypatch `get_item_by_id` to simulate an existing item.
+    2. Send a PUT request to update the item with an empty description.
+    3. Verify that the API responds with a 422 status code and the appropriate error message.
+    """
+    # Mock the get_item_by_id to simulate item found
+    async def mock_get_item_by_id(item_id: int):
+        return {"id": item_id, "name": "Old Item", "description": "Old description"}
+
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "Updated Item", "description": ""})
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "Description cannot be empty"}
+
+
+@pytest.mark.asyncio
+async def test_update_item_failure(monkeypatch):
+    """
+    Test Case: Simulate failure during item update.
+    
+    This test mocks both the `get_item_by_id` and `update_item` functions to simulate a failure during the update operation.
+    The API should return a 500 status code when the update fails unexpectedly.
+    
+    Steps:
+    1. Monkeypatch `get_item_by_id` to simulate an existing item.
+    2. Monkeypatch `update_item` to simulate an update failure.
+    3. Send a PUT request to update the item.
+    4. Verify that the API responds with a 500 status code and the appropriate error message.
+    """
+    # Mock the get_item_by_id to simulate item found
+    async def mock_get_item_by_id(item_id: int):
+        return {"id": item_id, "name": "Old Item", "description": "Old description"}
+
+    # Mock the update_item to simulate update failure
+    async def mock_update_item(item_id: int, name: str, description: str):
+        return None  # Simulate update failure
+
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
+    monkeypatch.setattr("app.api.endpoints.items.update_item", mock_update_item)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "Updated Item", "description": "Updated description"})
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to update item"}

@@ -14,6 +14,9 @@ async def create_item(name: str, description: str) -> Item:
     Returns:
         Item: The created Item object.
     """
+    if not name or not description:
+        raise ValueError("Name and description cannot be empty")
+
     item = await Item.create(name=name, description=description)
     return item
 
@@ -52,7 +55,13 @@ async def update_item(item_id: int, **updates) -> Optional[Item]:
     """
     item = await Item.get_or_none(id=item_id)
     if item:
-        # Filter out None values and update only the fields passed
+        # Check if name or description is empty
+        if 'name' in updates and not updates['name']:
+            raise ValueError("Name cannot be empty")
+        if 'description' in updates and not updates['description']:
+            raise ValueError("Description cannot be empty")
+
+        # Update only fields passed that are not None
         for field, value in updates.items():
             if value is not None:
                 setattr(item, field, value)

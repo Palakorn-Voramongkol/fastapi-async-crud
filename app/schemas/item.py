@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, constr, ConfigDict
 from typing import Optional
 
 class ItemCreate(BaseModel):
@@ -6,16 +6,16 @@ class ItemCreate(BaseModel):
     Pydantic model for creating a new item.
 
     Attributes:
-        name (str): The name of the item to be created.
-        description (str): A detailed description of the item.
+        name (str): The name of the item to be created (non-empty).
+        description (str): A detailed description of the item (non-empty).
     
     Configuration:
-        model_config (ConfigDict): Configuration for Pydantic model. 
-                                   `arbitrary_types_allowed=True` allows arbitrary types (default: True).
+        model_config (ConfigDict): Configuration for Pydantic model.
     """
-
-    name: str
-    description: str
+    
+    # Ensures that both 'name' and 'description' are non-empty strings
+    name: constr(min_length=1)  # name must be at least 1 character
+    description: constr(min_length=1)  # description must be at least 1 character
 
     # Model configuration for allowing arbitrary types if needed
     model_config = ConfigDict(arbitrary_types_allowed=True)
