@@ -1,0 +1,14 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+env/
+
+# Ignore database
+*.sqlite3
+
+# Ignore logs and cache
+*.log
+*.cache
