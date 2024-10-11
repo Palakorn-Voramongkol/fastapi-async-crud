@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class ItemCreate(BaseModel):
     name: str
     description: str
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 class ItemResponse(BaseModel):
     id: int
