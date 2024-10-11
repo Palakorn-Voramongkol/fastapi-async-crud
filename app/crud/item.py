@@ -3,6 +3,10 @@
 from app.db.models import Item
 from typing import Optional, List
 
+class ItemError(Exception):
+    """Custom Exception for Item CRUD operations."""
+    pass
+
 async def create_item(name: str, description: str) -> Item:
     """
     Create a new item in the database.
@@ -13,13 +17,22 @@ async def create_item(name: str, description: str) -> Item:
 
     Returns:
         Item: The created Item object.
+
+    Raises:
+        ValueError: If the name or description is empty.
+        ItemError: If the item creation fails unexpectedly.
     """
-    if not name or not description:
-        raise ValueError("Name and description cannot be empty")
-
-    item = await Item.create(name=name, description=description)
+    if not name:
+        raise ValueError("Name cannot be empty.")
+    if not description:
+        raise ValueError("Description cannot be empty.")
+    
+    try:
+        item = await Item.create(name=name, description=description)
+    except Exception as e:
+        raise ItemError(f"Failed to create item: {str(e)}")
+    
     return item
-
 
 
 async def get_items(limit: int = 10, offset: int = 0) -> List[Item]:
@@ -33,7 +46,10 @@ async def get_items(limit: int = 10, offset: int = 0) -> List[Item]:
     Returns:
         List[Item]: A list of Item objects in the database, limited by pagination parameters.
     """
-    return await Item.all().offset(offset).limit(limit)
+    try:
+        return await Item.all().offset(offset).limit(limit)
+    except Exception as e:
+        raise ItemError(f"Failed to retrieve items: {str(e)}")
 
 
 async def get_item_by_id(item_id: int) -> Optional[Item]:
@@ -45,8 +61,14 @@ async def get_item_by_id(item_id: int) -> Optional[Item]:
 
     Returns:
         Optional[Item]: The Item object if found, otherwise None.
+
+    Raises:
+        ItemError: If the retrieval process encounters an error.
     """
-    return await Item.get_or_none(id=item_id)
+    try:
+        return await Item.get_or_none(id=item_id)
+    except Exception as e:
+        raise ItemError(f"Failed to retrieve item by ID {item_id}: {str(e)}")
 
 
 async def update_item(item_id: int, **updates) -> Optional[Item]:
@@ -59,23 +81,30 @@ async def update_item(item_id: int, **updates) -> Optional[Item]:
 
     Returns:
         Optional[Item]: The updated item, or None if the item was not found.
+
+    Raises:
+        ValueError: If the name or description is empty.
+        ItemError: If the update process fails unexpectedly.
     """
-    item = await Item.get_or_none(id=item_id)
-    if item:
-        # Check if name or description is empty
-        if 'name' in updates and not updates['name']:
-            raise ValueError("Name cannot be empty")
-        if 'description' in updates and not updates['description']:
-            raise ValueError("Description cannot be empty")
-
-        # Update only fields passed that are not None
-        for field, value in updates.items():
-            if value is not None:
-                setattr(item, field, value)
-        await item.save()
-        return item
-    return None
-
+    try:
+        item = await Item.get_or_none(id=item_id)
+        if item:
+            # Check if name or description is empty
+            if 'name' in updates and not updates['name']:
+                raise ValueError("Name cannot be empty.")
+            if 'description' in updates and not updates['description']:
+                raise ValueError("Description cannot be empty.")
+            
+            # Update only fields that are passed and are not None
+            for field, value in updates.items():
+                if value is not None:
+                    setattr(item, field, value)
+            await item.save()
+            return item
+        else:
+            return None
+    except Exception as e:
+        raise ItemError(f"Failed to update item with ID {item_id}: {str(e)}")
 
 
 async def delete_item(item_id: int) -> bool:
@@ -87,9 +116,15 @@ async def delete_item(item_id: int) -> bool:
 
     Returns:
         bool: True if the item was found and deleted, otherwise False.
+
+    Raises:
+        ItemError: If the deletion process fails unexpectedly.
     """
-    item = await Item.get_or_none(id=item_id)
-    if item:
-        await item.delete()
-        return True
-    return False
+    try:
+        item = await Item.get_or_none(id=item_id)
+        if item:
+            await item.delete()
+            return True
+        return False
+    except Exception as e:
+        raise ItemError(f"Failed to delete item with ID {item_id}: {str(e)}")
