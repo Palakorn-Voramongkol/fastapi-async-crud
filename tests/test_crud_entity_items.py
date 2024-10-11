@@ -1,6 +1,6 @@
 import pytest
 import pytest_asyncio
-from app.models import Item
+
 from app.crud.item import (
     create_item,
     get_items,
@@ -30,7 +30,7 @@ async def initialize_tests():
     """
     await Tortoise.init(
         db_url="sqlite://:memory:",
-        modules={"models": ["app.models"]}
+        modules={"models": ["app.db.models"]}
     )
     await Tortoise.generate_schemas()
     yield

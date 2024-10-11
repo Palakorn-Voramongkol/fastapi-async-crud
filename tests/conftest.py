@@ -32,7 +32,7 @@ async def initialize_db():
     # Initialize the Tortoise ORM
     await Tortoise.init(
         db_url='sqlite://:memory:',  # In-memory SQLite DB for testing
-        modules={'models': ['app.models']}  # Point to the models in 'app.models'
+        modules={'models': ['app.db.models']}  # Point to the models in 'app.db.models'
     )
     
     # Generate the database schema (create tables based on models)

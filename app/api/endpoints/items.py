@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from app.schemas import ItemCreate, ItemResponse, ItemUpdate
+from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 from app.crud.item import create_item, get_items, get_item_by_id, update_item, delete_item
 
 router = APIRouter()

@@ -25,7 +25,7 @@ async def test_init_db():
     await init_db(db_url='sqlite://:memory:')
     
     # Perform a simple database operation to confirm connectivity
-    from app.models import Item
+    from app.db.models import Item
     try:
         items = await Item.all()
     except Exception as e:

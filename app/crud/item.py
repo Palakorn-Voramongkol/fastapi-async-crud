@@ -1,6 +1,6 @@
 # app/crud.py
 
-from app.models import Item
+from app.db.models import Item
 from typing import Optional, List
 
 async def create_item(name: str, description: str) -> Item:
