@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
 from app.crud.item import create_item, get_items, get_item_by_id, update_item, delete_item
+from typing import List
 
 router = APIRouter()
 
@@ -30,20 +31,23 @@ async def create_item_endpoint(item: ItemCreate):
         )
 
 
-@router.get("/", response_model=list[ItemResponse])
-async def read_items():
+@router.get("/", response_model=List[ItemResponse])
+async def read_items_endpoint(limit: int = Query(10, ge=1), offset: int = Query(0, ge=0)):
     """
-    Retrieve all items.
+    Retrieve paginated items.
+
+    Query Parameters:
+    - **limit** (optional, default=10): The number of items to retrieve.
+    - **offset** (optional, default=0): The starting point in the collection to retrieve items from.
 
     Returns:
     - A list of items, each including the `id`, `name`, and `description`.
-
-    This endpoint does not require any parameters.
     """
-    return await get_items()
+    items = await get_items(limit=limit, offset=offset)
+    return items
 
 @router.get("/{id}", response_model=ItemResponse)
-async def read_item(id: int):
+async def read_item_endpoint(id: int):
     """
     Retrieve a specific item by its ID.
 

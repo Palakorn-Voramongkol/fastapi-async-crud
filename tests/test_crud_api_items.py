@@ -486,3 +486,46 @@ async def test_update_item_failure(monkeypatch):
 
     assert response.status_code == 500
     assert response.json() == {"detail": "Failed to update item"}
+
+
+
+
+
+@pytest.mark.asyncio
+async def test_get_items_with_pagination():
+    """
+    Test Case: Retrieve items with pagination.
+
+    This test verifies that the API supports pagination by retrieving items
+    in paginated chunks and ensuring the correct number of items is returned.
+
+    Steps:
+    1. Create multiple items (for testing pagination).
+    2. Send a GET request to retrieve a limited number of items.
+    3. Verify the number of returned items matches the limit.
+    """
+    # Step 1: Create 100 items for testing
+    async def create_test_items(num_items=100):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            for i in range(num_items):
+                item_data = {"name": f"Item {i}", "description": f"Description {i}"}
+                await ac.post("/items/", json=item_data)
+
+    await create_test_items()
+
+    # Step 2: Retrieve items with pagination (limit=10, offset=0)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/items/", params={"limit": 10, "offset": 0})
+        assert response.status_code == 200
+        data = response.json()
+
+        # Step 3: Verify 10 items were returned
+        assert len(data) == 10
+
+        # Step 4: Test the next page with offset
+        response = await ac.get("/items/", params={"limit": 10, "offset": 10})
+        assert response.status_code == 200
+        data = response.json()
+
+        # Verify 10 more items were returned (i.e., the next 10 items)
+        assert len(data) == 10

@@ -20,14 +20,21 @@ async def create_item(name: str, description: str) -> Item:
     item = await Item.create(name=name, description=description)
     return item
 
-async def get_items() -> List[Item]:
+
+
+async def get_items(limit: int = 10, offset: int = 0) -> List[Item]:
     """
-    Retrieve all items from the database.
+    Retrieve a paginated list of items from the database.
+
+    Args:
+        limit (int): The maximum number of items to return (default is 10).
+        offset (int): The number of items to skip before starting to collect the result set (default is 0).
 
     Returns:
-        List[Item]: A list of all Item objects in the database.
+        List[Item]: A list of Item objects in the database, limited by pagination parameters.
     """
-    return await Item.all()
+    return await Item.all().offset(offset).limit(limit)
+
 
 async def get_item_by_id(item_id: int) -> Optional[Item]:
     """

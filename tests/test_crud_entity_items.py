@@ -294,10 +294,10 @@ async def test_create_item_empty_description():
 async def test_bulk_create_items():
     """
     Test Case: Bulk creation of items.
-    
+
     This test ensures that a large number of items can be created in the database
     without errors, and that each item is assigned a unique ID.
-    
+
     Steps:
     1. Create 100 items using `create_item`.
     2. Retrieve all items and assert that 100 items are successfully created.
@@ -307,8 +307,10 @@ async def test_bulk_create_items():
         item_data = {"name": f"Item {i}", "description": f"Description {i}"}
         await create_item(**item_data)
 
-    items = await get_items()
+    # Adjust the limit to retrieve all items
+    items = await get_items(limit=100)
     assert len(items) == num_items  # Ensure all items were created
+
 
 @pytest.mark.asyncio
 async def test_create_items_with_same_name():
