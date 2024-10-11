@@ -1,5 +1,5 @@
 # Byte-compiled files
-__pycache__/
+**/__pycache__/
 *.py[cod]
 
 # Virtual environments
@@ -8,6 +8,9 @@ env/
 
 # Ignore database
 *.sqlite3
+*.db
+*.db-shm
+*.db-wal
 
 # Ignore logs and cache
 *.log
