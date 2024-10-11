@@ -1,5 +1,5 @@
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from app.main import app  # Import the FastAPI app
 
 @pytest.mark.asyncio
@@ -11,8 +11,9 @@ async def test_create_item_success(monkeypatch):
     # Monkeypatch the function as it's imported in app.main
     monkeypatch.setattr("app.main.create_item", mock_create_item)
 
-    # Use AsyncClient for consistency
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    # Use ASGITransport with AsyncClient
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/items", json={"name": "Test Item", "description": "This is a test item"})
 
     assert response.status_code == 200
@@ -29,7 +30,8 @@ async def test_read_item_success(monkeypatch):
 
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get("/items/1")
 
     assert response.status_code == 200
@@ -47,7 +49,8 @@ async def test_read_item_failure(monkeypatch):
 
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get("/items/1")
 
     assert response.status_code == 404
@@ -65,7 +68,8 @@ async def test_update_item_success(monkeypatch):
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
     monkeypatch.setattr("app.main.update_item", mock_update_item)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.put("/items/1", json={
             "name": "Updated Item",
             "description": "Updated description"
@@ -86,7 +90,8 @@ async def test_update_item_failure(monkeypatch):
 
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.put("/items/1", json={
             "name": "Updated Item",
             "description": "Updated description"
@@ -107,7 +112,8 @@ async def test_delete_item_success(monkeypatch):
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
     monkeypatch.setattr("app.main.delete_item", mock_delete_item)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.delete("/items/1")
 
     assert response.status_code == 200
@@ -121,7 +127,8 @@ async def test_delete_item_failure(monkeypatch):
 
     monkeypatch.setattr("app.main.get_item_by_id", mock_get_item_by_id)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.delete("/items/1")
 
     assert response.status_code == 404
