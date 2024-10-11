@@ -21,6 +21,24 @@ async def test_create_item_success(monkeypatch):
     assert "id" in data
     assert data["name"] == "Test Item"
     assert data["description"] == "This is a test item"
+    
+pytest.mark.asyncio
+async def test_create_item_failure(monkeypatch):
+    # Mock the create_item function to simulate an exception
+    async def mock_create_item(name: str, description: str):
+        raise Exception("Simulated exception")
+
+    # Monkeypatch the function as it's imported in app.main
+    monkeypatch.setattr("app.main.create_item", mock_create_item)
+
+    # Use ASGITransport with AsyncClient
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        response = await ac.post("/items", json={"name": "Test Item", "description": "This is a test item"})
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Failed to create item: Simulated exception"}
+
 
 @pytest.mark.asyncio
 async def test_read_item_success(monkeypatch):

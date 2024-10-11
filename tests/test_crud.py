@@ -12,7 +12,7 @@ from app.crud import (
 )
 from tortoise import Tortoise
 
-@pytest_asyncio.fixture(scope="module", autouse=True)
+@pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
     # Initialize Tortoise ORM with in-memory SQLite database
     await Tortoise.init(
@@ -49,6 +49,26 @@ async def test_get_item_from_db_not_found():
     assert item is None
 
 @pytest.mark.asyncio
+async def test_get_items():
+    # Ensure the database is empty initially
+    items = await get_items()
+    assert isinstance(items, list)
+    assert len(items) == 0
+
+    # Create some items
+    item_data1 = {"name": "Item 1", "description": "Description 1"}
+    item_data2 = {"name": "Item 2", "description": "Description 2"}
+    await create_item(**item_data1)
+    await create_item(**item_data2)
+
+    # Retrieve all items
+    items = await get_items()
+    assert len(items) == 2
+    item_names = [item.name for item in items]
+    assert "Item 1" in item_names
+    assert "Item 2" in item_names
+
+@pytest.mark.asyncio
 async def test_update_item_in_db():
     # Create an item to update
     item_data = {"name": "Old Name", "description": "Old Description"}
@@ -65,6 +85,11 @@ async def test_update_item_in_db():
 
 @pytest.mark.asyncio
 async def test_update_item_in_db_not_found():
+    # Ensure the item does not exist
+    item = await get_item_by_id(999)
+    assert item is None
+
+    # Attempt to update the non-existent item
     updated_item = await update_item(
         999,
         name="Doesn't Matter",
