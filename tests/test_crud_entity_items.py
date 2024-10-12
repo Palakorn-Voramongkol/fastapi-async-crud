@@ -8,7 +8,10 @@ from app.crud.item import (
     update_item,
     delete_item,
 )
+from app.crud.item import create_item, ItemError
+from app.db.models import Item 
 from tortoise import Tortoise
+from tortoise.exceptions import OperationalError
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -379,3 +382,191 @@ async def test_update_item_invalid_data():
     # Try updating with an empty description
     with pytest.raises(ValueError):
         await update_item(created_item.id, description="")
+
+
+import pytest
+from app.crud.item import create_item, ItemError
+
+@pytest.mark.asyncio
+async def test_create_item_empty_name():
+    """
+    Test case for failure when trying to create an item with an empty name.
+    
+    This ensures that creating an item with an empty name raises a `ValueError`.
+    """
+    with pytest.raises(ValueError) as exc_info:
+        await create_item(name="", description="Valid description")
+    
+    assert "Name cannot be empty" in str(exc_info.value)
+
+@pytest.mark.asyncio
+async def test_create_item_empty_description():
+    """
+    Test case for failure when trying to create an item with an empty description.
+    
+    This ensures that creating an item with an empty description raises a `ValueError`.
+    """
+    with pytest.raises(ValueError) as exc_info:
+        await create_item(name="Valid name", description="")
+    
+    assert "Description cannot be empty" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_create_item_database_error(monkeypatch):
+    """
+    Test case for failure due to a database error during item creation.
+    
+    This ensures that if a database error occurs, an `ItemError` is raised.
+    """
+
+    # Mock the Item.create method to raise an exception simulating a database error
+    async def mock_item_create(*args, **kwargs):
+        raise Exception("Database error")
+
+    # Apply the monkeypatch to the Item.create method
+    monkeypatch.setattr("app.db.models.Item.create", mock_item_create)
+
+    # Attempt to create the item and expect an ItemError to be raised
+    with pytest.raises(ItemError) as exc_info:
+        await create_item(name="name", description="Description that causes error")
+    
+    # Assert that the error message includes 'Failed to create item'
+    assert "Failed to create item" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_create_item_with_invalid_data():
+    """
+    Test case for failure due to invalid data during item creation.
+    
+    This test ensures that attempting to create an item with invalid data, such as
+    an empty name or description, raises a ValueError.
+    
+    Steps:
+    1. Attempt to create an item with an empty name and verify that it raises a ValueError.
+    2. Attempt to create an item with an empty description and verify that it raises a ValueError.
+    """
+    # Test with an empty name
+    with pytest.raises(ValueError) as exc_info_name:
+        await create_item(name="", description="Valid description")
+    
+    assert "Name cannot be empty" in str(exc_info_name.value)
+
+    # Test with an empty description
+    with pytest.raises(ValueError) as exc_info_description:
+        await create_item(name="Valid name", description="")
+    
+    assert "Description cannot be empty" in str(exc_info_description.value)
+
+    
+    
+@pytest.mark.asyncio
+async def test_get_items_with_invalid_parameters():
+    """
+    Test Case: Attempt to retrieve items with invalid parameters.
+    
+    This test ensures that when invalid query parameters are provided to the 
+    get_items function, an appropriate error is raised.
+    
+    Steps:
+    1. Attempt to retrieve items using invalid parameters, such as a negative limit.
+    2. Assert that the correct exception (ItemError) is raised.
+    """
+    # Provide an invalid limit (negative value)
+    invalid_limit = -10
+    
+    # Attempt to retrieve items with the invalid limit
+    with pytest.raises(ItemError) as exc_info:
+        await get_items(limit=invalid_limit, offset=0)
+    
+    # Verify that the exception contains the expected error message
+    assert "Failed to retrieve items" in str(exc_info.value)
+
+
+
+@pytest.mark.asyncio
+async def test_get_item_by_id_failure(monkeypatch):
+    """
+    Test case for failure due to an error during item retrieval by ID.
+    
+    This ensures that if an error occurs during retrieval, an `ItemError` is raised.
+    """
+
+    # Mock the Item.get_or_none method to raise an exception simulating a database error
+    async def mock_item_get_or_none(*args, **kwargs):
+        raise Exception("Database error")
+
+    # Apply the monkeypatch to the Item.get_or_none method
+    monkeypatch.setattr("app.db.models.Item.get_or_none", mock_item_get_or_none)
+
+    # Attempt to retrieve the item by ID and expect an ItemError to be raised
+    with pytest.raises(ItemError) as exc_info:
+        await get_item_by_id(item_id=123)
+    
+    # Assert that the error message includes 'Failed to retrieve item by ID'
+    assert "Failed to retrieve item by ID 123" in str(exc_info.value)
+    assert "Database error" in str(exc_info.value)
+
+
+import pytest
+from app.crud.item import update_item, ItemError
+from app.db.models import Item
+
+@pytest.mark.asyncio
+async def test_update_item_database_error(monkeypatch):
+    """
+    Test case for failure due to a database error during item update.
+    
+    This ensures that if a database error occurs during the update, an `ItemError` is raised.
+    """
+    
+    # Mock the Item.get_or_none method to return a valid item
+    async def mock_item_get_or_none(*args, **kwargs):
+        return Item(id=123, name="Old Name", description="Old Description")
+    
+    # Mock the Item.save method to raise an exception simulating a database error
+    async def mock_item_save(*args, **kwargs):
+        raise Exception("Database error")
+    
+    # Apply the monkeypatch to the Item.get_or_none and Item.save methods
+    monkeypatch.setattr("app.db.models.Item.get_or_none", mock_item_get_or_none)
+    monkeypatch.setattr("app.db.models.Item.save", mock_item_save)
+
+    # Attempt to update the item and expect an ItemError to be raised
+    with pytest.raises(ItemError) as exc_info:
+        await update_item(item_id=123, name="Updated Name", description="Updated Description")
+    
+    # Assert that the error message includes 'Failed to update item'
+    assert "Failed to update item with ID 123" in str(exc_info.value)
+    assert "Database error" in str(exc_info.value)
+
+
+
+@pytest.mark.asyncio
+async def test_delete_item_database_error(monkeypatch):
+    """
+    Test case for failure due to a database error during item deletion.
+    
+    This ensures that if a database error occurs during deletion, an `ItemError` is raised.
+    """
+
+    # Mock the Item.get_or_none method to return a valid item
+    async def mock_item_get_or_none(*args, **kwargs):
+        return Item(id=123, name="Test Item", description="Test Description")
+
+    # Mock the Item.delete method to raise an exception simulating a database error
+    async def mock_item_delete(*args, **kwargs):
+        raise Exception("Database error during deletion")
+
+    # Apply the monkeypatch to mock Item.get_or_none and Item.delete methods
+    monkeypatch.setattr("app.db.models.Item.get_or_none", mock_item_get_or_none)
+    monkeypatch.setattr("app.db.models.Item.delete", mock_item_delete)
+
+    # Attempt to delete the item and expect an ItemError to be raised
+    with pytest.raises(ItemError) as exc_info:
+        await delete_item(item_id=123)
+
+    # Assert that the error message includes 'Failed to delete item'
+    assert "Failed to delete item with ID 123" in str(exc_info.value)
+    assert "Database error during deletion" in str(exc_info.value)
