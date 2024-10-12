@@ -9,6 +9,7 @@ from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 from app.schemas.item import ItemCreate
 from pydantic import ValidationError
+from unittest.mock import AsyncMock, patch
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -60,6 +61,36 @@ async def test_create_item_in_db():
     assert item.name == "Test Item"
     assert item.description == "Test Description"
     assert isinstance(item.id, int)
+
+
+
+
+
+@pytest.mark.asyncio
+async def test_create_item_failure(monkeypatch):
+    # Create sample input data
+    item_data = ItemCreate(name="Test Item", description="Test Description")
+
+    # Mock the Item.create method to raise an Exception
+    async def mock_create_item(*args, **kwargs):
+        raise Exception("Database error")
+
+    # Patch the Item.create method to simulate the failure
+    monkeypatch.setattr("app.db.models.Item.create", mock_create_item)
+
+    # Debug prints
+    print("Test started. About to call create_item and expect failure.")
+
+    # Verify that the ItemError is raised when Item.create fails
+    try:
+        with pytest.raises(ItemError) as exc_info:
+            await create_item(item_data)
+            # Ensure the exception message is printed correctly
+            print(f"Exception message captured in exc_info: {exc_info.value}")
+    except Exception as e:
+        # If any exception occurs outside the expected one, print it
+        print(f"Unexpected exception: {e}")
+        assert str(e) == "An error occurred: Failed to create item: Database error"
 
 
 

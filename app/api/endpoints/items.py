@@ -93,7 +93,6 @@ async def update_item_endpoint(id: int, item_update: ItemUpdate):
     
     return updated_item
 
-
 @router.delete("/{id}")
 async def delete_item_endpoint(id: int):
     """
@@ -106,13 +105,16 @@ async def delete_item_endpoint(id: int):
 
     Raises:
     - **404 Not Found**: If the item with the specified ID does not exist.
+    - **500 Internal Server Error**: If the deletion fails due to a database error or other issue.
     """
     existing_item = await get_item_by_id(id)
     if not existing_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
     try:
+        print(f"Attempting to delete item with id: {id}")  # Debug print to confirm deletion attempt
         await delete_item(id)
         return {"message": "Item deleted successfully"}
     except Exception as e:
+        print(f"Exception caught during deletion: {e}")  # Debug print to see the exception
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete item: {str(e)}")
