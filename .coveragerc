@@ -1,3 +1,6 @@
 [report]
 omit = app/__init__.py, app/api/__init__.py, app/api/endpoints/__init__.py, app/crud/__init__.py, app/db/__init__.py, app/schemas/__init__.py, app/utils/__init__.py
 show_missing = True
+
+[html]
+directory = coverage_html_report

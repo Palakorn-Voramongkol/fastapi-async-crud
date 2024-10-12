@@ -133,9 +133,40 @@ This will run the server on `http://127.0.0.1:8000`.
 
 ## Testing
 
-- **Unit Tests**: Test CRUD operations and other application logic.
-- **Coverage**: Ensure test coverage using Pytest's coverage plugin.
 
+### Code Coverage: Test CRUD operations and other application logic.
+
+| File                                   | Statements | Missing | Excluded | Coverage |
+| -------------------------------------- | ---------- | ------- | -------- | -------- |
+| app/api/endpoints/items.py             | 45         | 0       | 0        | 100%     |
+| app/crud/item.py                       | 49         | 0       | 0        | 100%     |
+| app/database.py                        | 6          | 0       | 0        | 100%     |
+| app/db/models.py                       | 7          | 0       | 0        | 100%     |
+| app/main.py                            | 11         | 3       | 0        | 73%      |
+| app/schemas/item.py                    | 44         | 0       | 0        | 100%     |
+| app/utils/constants.py                 | 4          | 0       | 0        | 100%     |
+| app/utils/exceptions.py                | 17         | 0       | 0        | 100%     |
+| tests/__init__.py                      | 0          | 0       | 0        | 100%     |
+| tests/conftest.py                      | 8          | 0       | 0        | 100%     |
+| tests/test_crud_api_items_create.py    | 48         | 1       | 0        | 98%      |
+| tests/test_crud_api_items_delete.py    | 44         | 0       | 0        | 100%     |
+| tests/test_crud_api_items_read.py      | 38         | 0       | 0        | 100%     |
+| tests/test_crud_api_items_update.py    | 52         | 1       | 0        | 98%      |
+| tests/test_crud_entity_items_create.py | 73         | 4       | 0        | 95%      |
+| tests/test_crud_entity_items_delete.py | 48         | 0       | 0        | 100%     |
+| tests/test_crud_entity_items_read.py   | 59         | 0       | 0        | 100%     |
+| tests/test_crud_entity_items_update.py | 87         | 2       | 0        | 98%      |
+| tests/test_database.py                 | 21         | 2       | 0        | 90%      |
+| tests/test_lifespan.py                 | 32         | 3       | 0        | 91%      |
+| tests/test_schema_items.py             | 39         | 0       | 0        | 100%     |
+| **Total**                              | **732**    | **16**  | **0**    | **98%**  |
+
+
+
+Install coverage tools:
+```bash
+pip install pytest pytest-cov coverage
+```
 
 To run the tests with coverage:
 
@@ -150,8 +181,15 @@ pytest --cov=app --cov-report=term-missing -s
 ```
 
 
+Run tests and generate HTML coverage report:
+```bash
+pytest --cov=app --cov-report html      
+```
 
-
+Open the report
+```bash
+open coverage_html_report/index.html 
+```
 ## API Usage
 
 ### 1. **Create a New Item**
