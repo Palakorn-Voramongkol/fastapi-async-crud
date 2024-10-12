@@ -570,3 +570,58 @@ async def test_delete_item_database_error(monkeypatch):
     # Assert that the error message includes 'Failed to delete item'
     assert "Failed to delete item with ID 123" in str(exc_info.value)
     assert "Database error during deletion" in str(exc_info.value)
+    
+    
+    
+    
+import pytest
+from httpx import AsyncClient
+from app.main import app  # Adjust based on your project structure
+from app.crud.item import create_item, update_item
+
+
+@pytest.mark.asyncio
+async def test_update_item_endpoint_failures(monkeypatch):
+    """
+    Test case for failure scenarios in the `update_item_endpoint`.
+    """
+
+    # Test 404 Not Found (Item doesn't exist)
+    async def mock_get_item_by_id_404(id: int):
+        return None
+    
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id_404)
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.put("/items/9999", json={"name": "Updated Name", "description": "Updated Description"})
+        assert response.status_code == 404
+        assert "Item not found" in response.json()["detail"]
+
+    # Mock item found for subsequent tests
+    async def mock_get_item_by_id(id: int):
+        return {"id": id, "name": "Existing Item", "description": "Existing Description"}
+    
+    monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
+
+    # Test 422 Unprocessable Entity (Empty Name)
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "", "description": "Updated Description"})
+        assert response.status_code == 422
+        assert "Value error" in response.json()["detail"][0]["msg"]
+
+    # Test 422 Unprocessable Entity (Empty Description)
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "Updated Name", "description": ""})
+        assert response.status_code == 422
+        assert "Value error" in response.json()["detail"][0]["msg"]
+
+    # Test 500 Internal Server Error (Update failed)
+    async def mock_update_item(id: int, **updates):
+        return None
+
+    monkeypatch.setattr("app.api.endpoints.items.update_item", mock_update_item)
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.put("/items/1", json={"name": "Updated Name", "description": "Updated Description"})
+        assert response.status_code == 500
+        assert "Failed to update item" in response.json()["detail"]

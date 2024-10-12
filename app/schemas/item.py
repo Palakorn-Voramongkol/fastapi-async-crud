@@ -1,23 +1,41 @@
-from pydantic import BaseModel, constr, ConfigDict, Field
+from pydantic import BaseModel, constr, ConfigDict, Field, ValidationError, field_validator
 from typing import Optional
 from app.utils.constants import MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, MIN_DESCRIPTION_LENGTH, MIN_NAME_LENGTH
 
 class ItemCreate(BaseModel):
     """
-    Pydantic model for creating a new item.
+    Pydantic model for creating a new item with custom validation error messages.
 
     Attributes:
-        name (str): The name of the item to be created (non-empty).
-        description (str): A detailed description of the item (non-empty).
-    
-    Configuration:
-        model_config (ConfigDict): Configuration for Pydantic model.
+        name (str): The name of the item to be created (non-empty, with a custom error message).
+        description (str): A detailed description of the item (non-empty, with a custom error message).
     """
     
-    # Ensures that both 'name' and 'description' are non-empty strings
-    # Enforce min and max length on name and description using Field
-    name: str = Field(..., min_length=MIN_NAME_LENGTH, max_length=MAX_NAME_LENGTH)
-    description: str = Field(..., min_length=MIN_DESCRIPTION_LENGTH, max_length=MAX_DESCRIPTION_LENGTH)
+# Use Field to define min and max length
+    name: str 
+    description: str 
+
+    # Custom field validator for name
+    @field_validator("name")
+    def validate_name(cls, value):
+        print("*******************")
+        print(value)
+        if len(value) < MIN_NAME_LENGTH:
+            raise ValueError(f"Name must be at least {MIN_NAME_LENGTH} characters long.")
+        if len(value) > MAX_NAME_LENGTH:
+            raise ValueError(f"Name must not exceed {MAX_NAME_LENGTH} characters.")
+        return value
+    
+    # Custom field validator for description
+    @field_validator("description")
+    def validate_description(cls, value):
+        if len(value.strip()) < MIN_DESCRIPTION_LENGTH:
+            raise ValueError(f"Description must be at least {MIN_DESCRIPTION_LENGTH} characters long.")
+        if len(value) > MAX_DESCRIPTION_LENGTH:
+            raise ValueError(f"Description must not exceed {MAX_DESCRIPTION_LENGTH} characters.")
+        return value
+
+
 
 
 class ItemResponse(BaseModel):
@@ -49,7 +67,26 @@ class ItemUpdate(BaseModel):
         name (Optional[str]): The updated name of the item (optional, can be omitted).
         description (Optional[str]): The updated description of the item (optional, can be omitted).
     """
+    
+    name: Optional[str] = None
+    description: Optional[str] = None
 
-    # These are optional fields, but length constraints are enforced if provided
-    name: Optional[str] = Field(None, min_length=MIN_NAME_LENGTH, max_length=MAX_NAME_LENGTH)
-    description: Optional[str] = Field(None, min_length=MIN_DESCRIPTION_LENGTH, max_length=MAX_DESCRIPTION_LENGTH)
+    # Custom field validator for name
+    @field_validator("name")
+    def validate_name(cls, value):
+        if (value != None):
+            if len(value.strip()) < MIN_NAME_LENGTH:
+                raise ValueError(f"Name must be at least {MIN_NAME_LENGTH} characters long.")
+            if len(value) > MAX_NAME_LENGTH:
+                raise ValueError(f"Name must not exceed {MAX_NAME_LENGTH} characters.")
+            return value
+    
+    # Custom field validator for description
+    @field_validator("description")
+    def validate_description(cls, value):
+        if (value != None):
+            if len(value.strip()) < MIN_DESCRIPTION_LENGTH:
+                raise ValueError(f"Description must be at least {MIN_DESCRIPTION_LENGTH} characters long.")
+            if len(value) > MAX_DESCRIPTION_LENGTH:
+                raise ValueError(f"Description must not exceed {MAX_DESCRIPTION_LENGTH} characters.")
+            return value
