@@ -124,7 +124,7 @@ pip install -r requirements.txt
 To start the FastAPI application:
 
 ```bash
-uvicorn app.utils.main:app --reload
+uvicorn app.main:app --reload
 ```
 
 This will run the server on `http://127.0.0.1:8000`.
