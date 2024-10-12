@@ -89,12 +89,6 @@ async def update_item_endpoint(id: int, item_update: ItemUpdate):
     # Extract only the fields that are set in the update request
     updated_data = item_update.model_dump(exclude_unset=True)
 
-    # Validate that the name and description are not empty
-    if 'name' in updated_data and not updated_data['name']:
-        raise HTTPException(status_code=422, detail="Name cannot be empty")
-    if 'description' in updated_data and not updated_data['description']:
-        raise HTTPException(status_code=422, detail="Description cannot be empty")
-
     # Perform the update operation and handle potential failure
     updated_item = await update_item(id, **updated_data)
     if updated_item is None:
