@@ -25,6 +25,8 @@ palakorn-fastapi-async-crud/
 │   │   ├── __init__.py
 │   │   ├── database.py
 │   │   ├── main.py
+│   │   ├── constants.py
+│   │   ├── exceptions.py
 ├── fastapi_env/
 ├── tests/
 │   ├── __init__.py
@@ -67,9 +69,11 @@ Contains the core application logic.
 - **schemas/**: Defines the Pydantic models used for data validation and serialization.
   - `item.py`: Contains the schema for `Item` and its properties.
 
-- **utils/**: Utility functions, including database connection setup and the main application entry point.
+- **utils/**: Utility functions, including database connection, constants, exceptions, setup and the main application entry point.
   - `database.py`: Handles the asynchronous database connection.
   - `main.py`: Main entry point to start the FastAPI application.
+  - `constants.py`: all constants used in the application.
+  - `exception.py`: all exception classes used in the application.
 
 ### 2. `tests/`
 Contains the test cases for the application.
