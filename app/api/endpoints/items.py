@@ -20,11 +20,9 @@ async def create_item_endpoint(item: ItemCreate):
     - **400 Bad Request**: If the item creation fails due to any unexpected errors.
     """
     try:
-        # Create a new item by passing the Pydantic model directly to the create_item function
         created_item = await create_item(item)
         return created_item
     except Exception as e:
-        # Return a 400 error if item creation fails unexpectedly
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to create item: {str(e)}"
@@ -46,6 +44,7 @@ async def read_items_endpoint(limit: int = Query(10, ge=1), offset: int = Query(
     items = await get_items(limit=limit, offset=offset)
     return items
 
+
 @router.get("/{id}", response_model=ItemResponse)
 async def read_item_endpoint(id: int):
     """
@@ -61,8 +60,9 @@ async def read_item_endpoint(id: int):
     """
     item = await get_item_by_id(id)
     if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     return item
+
 
 @router.put("/{id}", response_model=ItemResponse)
 async def update_item_endpoint(id: int, item_update: ItemUpdate):
@@ -81,20 +81,18 @@ async def update_item_endpoint(id: int, item_update: ItemUpdate):
     - **422 Unprocessable Entity**: If the name or description is empty.
     - **500 Internal Server Error**: If the item could not be updated for unknown reasons.
     """
-    # Check if the item exists before attempting to update it
     existing_item = await get_item_by_id(id)
     if not existing_item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
-    # Extract only the fields that are set in the update request
     updated_data = item_update.model_dump(exclude_unset=True)
-
-    # Perform the update operation and handle potential failure
-    updated_item = await update_item(id, **updated_data)
-    if updated_item is None:
-        raise HTTPException(status_code=500, detail="Failed to update item")
+    try:
+        updated_item = await update_item(id, item_data=item_update)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to update item: {str(e)}")
     
     return updated_item
+
 
 @router.delete("/{id}")
 async def delete_item_endpoint(id: int):
@@ -109,11 +107,12 @@ async def delete_item_endpoint(id: int):
     Raises:
     - **404 Not Found**: If the item with the specified ID does not exist.
     """
-    # Check if the item exists before attempting to delete it
     existing_item = await get_item_by_id(id)
     if not existing_item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
-    # Delete the item and return a success message
-    await delete_item(id)
-    return {"message": "Item deleted successfully"}
+    try:
+        await delete_item(id)
+        return {"message": "Item deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete item: {str(e)}")

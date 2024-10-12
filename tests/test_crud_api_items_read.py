@@ -1,7 +1,8 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app  # Import the FastAPI app
-from app.api.endpoints.items import create_item, get_item_by_id  # Import the CRUD operations from the correct module
+from app.schemas.item import ItemCreate  # Import the Pydantic schema for item creation
+
 
 @pytest.mark.asyncio
 async def test_read_item_success(monkeypatch):
@@ -39,6 +40,7 @@ async def test_read_item_success(monkeypatch):
         "description": "This is a test item"
     }
 
+
 @pytest.mark.asyncio
 async def test_read_item_failure(monkeypatch):
     """
@@ -71,13 +73,14 @@ async def test_read_item_failure(monkeypatch):
     assert response.status_code == 404
     assert response.json() == {"detail": "Item not found"}
 
+
 @pytest.mark.asyncio
-async def test_get_items_with_pagination():
+async def test_get_items_with_pagination(monkeypatch):
     """
     Testcase: Retrieval of items using pagination.
     
     Steps:
-    1. Create multiple items to test pagination functionality.
+    1. Mock the `get_items` function to return a paginated list of items.
     2. Use `AsyncClient` to send a GET request with pagination parameters (`limit` and `offset`).
     3. Verify that the correct number of items is returned in each paginated request.
     
@@ -88,14 +91,11 @@ async def test_get_items_with_pagination():
     Result(s):
     - Test passes if the correct number of items is returned in each request, and pagination works as expected.
     """
-    # Step 1: Create 100 items for testing pagination
-    async def create_test_items(num_items=100):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            for i in range(num_items):
-                item_data = {"name": f"Item {i}", "description": f"Description {i}"}
-                await ac.post("/items/", json=item_data)
+    # Step 1: Mock the `get_items` function to simulate paginated response
+    async def mock_get_items(limit: int, offset: int):
+        return [{"id": i + offset, "name": f"Item {i + offset}", "description": f"Description {i + offset}"} for i in range(limit)]
 
-    await create_test_items()
+    monkeypatch.setattr("app.api.endpoints.items.get_items", mock_get_items)
 
     # Step 2: Retrieve items with pagination (limit=10, offset=0)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:

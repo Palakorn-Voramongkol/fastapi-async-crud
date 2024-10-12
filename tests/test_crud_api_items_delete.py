@@ -1,23 +1,26 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app  # Import the FastAPI app
-from app.api.endpoints.items import create_item, get_item_by_id  # Import the CRUD operations from the correct module
+
 
 @pytest.mark.asyncio
 async def test_delete_item_success(monkeypatch):
     """
-    Testcase: Successful deletion of an item.
-    
+    Test Case: Successful deletion of an item.
+
+    This test mocks both the `get_item_by_id` and `delete_item` functions to simulate
+    the successful deletion of an item.
+
     Steps:
     1. Monkeypatch `get_item_by_id` to simulate finding the item to be deleted.
     2. Monkeypatch `delete_item` to simulate successful item deletion.
     3. Use `AsyncClient` to send a DELETE request to delete the item.
     4. Verify the response status code and the success message.
-    
+
     Expectation:
     - The API should return a 200 status code indicating successful deletion.
     - The returned JSON message should confirm the item was deleted.
-    
+
     Result(s):
     - Test passes if the item is successfully deleted and the correct success message is returned.
     """
@@ -41,20 +44,24 @@ async def test_delete_item_success(monkeypatch):
     assert response.status_code == 200
     assert response.json() == {"message": "Item deleted successfully"}
 
+
 @pytest.mark.asyncio
 async def test_delete_item_failure(monkeypatch):
     """
-    Testcase: Failure in deleting an item (item not found).
-    
+    Test Case: Failure in deleting an item (item not found).
+
+    This test mocks the `get_item_by_id` function to simulate a case where the item is not found,
+    and then verifies the API correctly returns a 404 status code.
+
     Steps:
     1. Monkeypatch `get_item_by_id` to simulate a case where the item is not found.
     2. Use `AsyncClient` to send a DELETE request to delete a non-existent item.
     3. Verify the response status code is 404 and the appropriate error message is returned.
-    
+
     Expectation:
     - The API should return a 404 status code indicating that the item was not found.
     - The returned JSON message should indicate the item was not found.
-    
+
     Result(s):
     - Test passes if the correct 404 error is returned with the expected error message.
     """

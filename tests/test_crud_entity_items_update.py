@@ -13,12 +13,15 @@ from app.crud.item import (
     ItemError
 )
 from pydantic import ValidationError
-
+from fastapi import status  # Import status from FastAPI
 from app.db.models import Item 
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
 from app.schemas.item import ItemCreate, ItemUpdate
 from app.crud.item import create_item, update_item
+
+from app.api.endpoints.items import get_item_by_id, update_item  # Import necessary functions
+
 
 
 from app.utils.exceptions import ItemNotFoundError
@@ -242,13 +245,12 @@ async def test_update_item_database_error(monkeypatch):
     assert "An error occurred: Database error" in str(exc_info.value)
 '''
 
-
 @pytest.mark.asyncio
 async def test_update_item_endpoint_failures(monkeypatch):
     """
     Test Case: Simulate failure scenarios in the `update_item` endpoint.
-    
-    This test ensures that the correct error codes are returned for different failure 
+
+    This test ensures that the correct error codes are returned for different failure
     scenarios when updating an item via the FastAPI endpoint.
 
     Steps:
@@ -262,39 +264,40 @@ async def test_update_item_endpoint_failures(monkeypatch):
     # Step 1: Simulate 404 Not Found (Item doesn't exist)
     async def mock_get_item_by_id_404(id: int):
         return None
-    
+
     monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id_404)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.put("/items/9999", json={"name": "Updated Name", "description": "Updated Description"})
-        assert response.status_code == 404
+        assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "Item not found" in response.json()["detail"]
 
     # Step 2: Simulate 422 Unprocessable Entity (Invalid Name or Description)
     async def mock_get_item_by_id(id: int):
         return {"id": id, "name": "Existing Item", "description": "Existing Description"}
-    
+
     monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
 
     # Invalid Name
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.put("/items/1", json={"name": "", "description": "Updated Description"})
-        assert response.status_code == 422
-        assert "Value error" in response.json()["detail"][0]["msg"]
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "value_error" in response.json()["detail"][0]["type"]
 
     # Invalid Description
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.put("/items/1", json={"name": "Updated Name", "description": ""})
-        assert response.status_code == 422
-        assert "Value error" in response.json()["detail"][0]["msg"]
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "value_error" in response.json()["detail"][0]["type"]
 
     # Step 3: Simulate 500 Internal Server Error (Update failure)
     async def mock_update_item(id: int, **updates):
-        return None
+        # Simulate a failure in the update process by raising an Exception
+        raise Exception("Failed to update item")
 
     monkeypatch.setattr("app.api.endpoints.items.update_item", mock_update_item)
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.put("/items/1", json={"name": "Updated Name", "description": "Updated Description"})
-        assert response.status_code == 500
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Failed to update item" in response.json()["detail"]

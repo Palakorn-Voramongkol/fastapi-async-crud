@@ -1,11 +1,9 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app  # Import the FastAPI app
-from app.api.endpoints.items import create_item, get_item_by_id  # Import the CRUD operations from the correct module
-
-
-from app.crud.item import create_item  # Import the create_item method from the correct module
 from app.schemas.item import ItemCreate  # Import the Pydantic schema for item creation
+from app.crud.item import create_item  # Import the create_item method from the correct module
+
 
 @pytest.mark.asyncio
 async def test_create_item_success(monkeypatch):
@@ -29,7 +27,7 @@ async def test_create_item_success(monkeypatch):
         return {"id": 1, "name": item_data.name, "description": item_data.description}
 
     # Monkeypatch the function
-    monkeypatch.setattr("app.crud.create_item", mock_create_item)
+    monkeypatch.setattr("app.crud.item.create_item", mock_create_item)
 
     # Step 2: Use AsyncClient to send the request
     transport = ASGITransport(app=app)
@@ -42,6 +40,8 @@ async def test_create_item_success(monkeypatch):
     assert "id" in data
     assert data["name"] == "Test Item"
     assert data["description"] == "This is a test item"
+
+
 
 
 @pytest.mark.asyncio
@@ -65,7 +65,8 @@ async def test_create_item_failure(monkeypatch):
     async def mock_create_item(item_data: ItemCreate):
         raise Exception("Simulated exception")
 
-    monkeypatch.setattr("app.crud.create_item", mock_create_item)
+    # Patch the FastAPI endpoint that uses `create_item`
+    monkeypatch.setattr("app.api.endpoints.items.create_item", mock_create_item)
 
     # Step 2: Send the POST request
     transport = ASGITransport(app=app)
