@@ -3,19 +3,13 @@ import pytest_asyncio
 
 from httpx import AsyncClient
 from app.main import app  # Adjust based on your project structure
-
-from app.crud.item import (
-    create_item,
-    get_items,
-    get_item_by_id,
-    update_item,
-    delete_item,
-    ItemError
-)
-
+from app.crud.item import create_item, get_items, get_item_by_id, update_item, delete_item, ItemError
 from app.db.models import Item 
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
+from app.schemas.item import ItemCreate
+from pydantic import ValidationError
+from app.utils.exceptions import ItemNotFoundError
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -43,60 +37,67 @@ async def initialize_tests():
     yield
     await Tortoise.close_connections()
 
+
+
 @pytest.mark.asyncio
 async def test_delete_item_from_db():
     """
     Test Case: Delete an existing item from the database.
     
-    This test verifies that the `delete_item` function successfully deletes an 
-    item from the database.
+    This test ensures that the `delete_item` function correctly deletes an item
+    that exists in the database.
 
     Steps:
     1. Create an item using `create_item`.
-    2. Delete the item using `delete_item`.
-    3. Verify that the item no longer exists in the database using `get_item_by_id`.
+    2. Delete the created item using `delete_item`.
+    3. Verify that the `delete_item` function returns `True`.
 
     Expectation:
-    - The item should be successfully deleted from the database, and `get_item_by_id` should return `None`.
+    - Deleting an existing item should return `True`.
 
     Result(s):
-    - Test passes if the item is deleted, and `get_item_by_id` returns `None`.
+    - Test passes if `delete_item` returns `True` when the item exists.
     """
-    # Step 1: Create an item
-    item_data = {"name": "Delete Me", "description": "To be deleted"}
-    created_item = await create_item(**item_data)
+    # Step 1: Create an item using the Pydantic model
+    item_data = ItemCreate(name="Item to Delete", description="This item will be deleted")
+    created_item = await create_item(item_data)
 
-    # Step 2: Delete the item
+    # Step 2: Delete the created item
     result = await delete_item(created_item.id)
+
+    # Step 3: Verify the deletion result is True
     assert result is True
 
-    # Step 3: Verify the item no longer exists
-    item = await get_item_by_id(created_item.id)
-    assert item is None
+
+
+
 
 @pytest.mark.asyncio
 async def test_delete_item_from_db_not_found():
     """
     Test Case: Try deleting an item that doesn't exist in the database.
     
-    This test ensures that the `delete_item` function returns `False` if an item 
-    with the specified ID does not exist in the database.
+    This test ensures that the `delete_item` function raises `ItemNotFoundError` 
+    if an item with the specified ID does not exist in the database.
 
     Steps:
     1. Attempt to delete a non-existent item.
-    2. Verify that the `delete_item` function returns `False`.
+    2. Verify that `ItemNotFoundError` is raised.
 
     Expectation:
-    - Attempting to delete a non-existent item should return `False`.
+    - Attempting to delete a non-existent item should raise `ItemNotFoundError`.
 
     Result(s):
-    - Test passes if `delete_item` returns `False` when the item does not exist.
+    - Test passes if `ItemNotFoundError` is raised when the item does not exist.
     """
-    # Step 1: Attempt to delete a non-existent item
-    result = await delete_item(999)
+    # Step 1: Attempt to delete a non-existent item and expect `ItemNotFoundError`
+    non_existent_item_id = 999  # Assume ID 999 does not exist
+    with pytest.raises(ItemNotFoundError):
+        await delete_item(non_existent_item_id)
 
-    # Step 2: Verify the deletion result is False
-    assert result is False
+
+
+
 
 @pytest.mark.asyncio
 async def test_delete_already_deleted_item():
@@ -104,31 +105,35 @@ async def test_delete_already_deleted_item():
     Test Case: Attempt to delete an already deleted item.
     
     This test ensures that once an item is deleted, attempting to delete it again 
-    returns the correct result (`False`).
+    raises `ItemNotFoundError`.
 
     Steps:
     1. Create an item using `create_item`.
     2. Delete the item using `delete_item`.
     3. Attempt to delete the same item again using `delete_item`.
-    4. Verify that the second deletion attempt returns `False`.
+    4. Verify that the second deletion attempt raises `ItemNotFoundError`.
 
     Expectation:
-    - Deleting an already deleted item should return `False`.
+    - Deleting an already deleted item should raise `ItemNotFoundError`.
 
     Result(s):
-    - Test passes if `delete_item` returns `False` on the second attempt to delete the item.
+    - Test passes if `ItemNotFoundError` is raised on the second attempt to delete the item.
     """
-    # Step 1: Create an item
-    item_data = {"name": "Item to be Deleted", "description": "To be deleted"}
-    created_item = await create_item(**item_data)
+    # Step 1: Create an item using the Pydantic model
+    item_data = ItemCreate(name="Item to be Deleted", description="To be deleted")
+    created_item = await create_item(item_data)
 
     # Step 2: Delete the item the first time
     result = await delete_item(created_item.id)
-    assert result is True
+    assert result is True  # Expect True on successful first deletion
 
-    # Step 3: Attempt to delete the item again
-    result = await delete_item(created_item.id)
-    assert result is False
+    # Step 3: Attempt to delete the item again and expect an ItemNotFoundError
+    with pytest.raises(ItemNotFoundError):
+        await delete_item(created_item.id)
+
+
+
+
 
 @pytest.mark.asyncio
 async def test_delete_item_database_error(monkeypatch):

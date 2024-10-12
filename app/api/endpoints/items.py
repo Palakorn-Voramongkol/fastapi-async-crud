@@ -20,8 +20,8 @@ async def create_item_endpoint(item: ItemCreate):
     - **400 Bad Request**: If the item creation fails due to any unexpected errors.
     """
     try:
-        # Create a new item with the provided name and description
-        created_item = await create_item(item.name, item.description)
+        # Create a new item by passing the Pydantic model directly to the create_item function
+        created_item = await create_item(item)
         return created_item
     except Exception as e:
         # Return a 400 error if item creation fails unexpectedly

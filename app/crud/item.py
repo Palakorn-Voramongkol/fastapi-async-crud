@@ -2,39 +2,34 @@
 
 from app.db.models import Item
 from typing import Optional, List
+from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
+from app.utils.exceptions import handle_exceptions, ItemNotFoundError
 
 class ItemError(Exception):
     """Custom Exception for Item CRUD operations."""
     pass
 
-async def create_item(name: str, description: str) -> Item:
+@handle_exceptions
+async def create_item(item_data: ItemCreate) -> Item:
     """
     Create a new item in the database.
 
     Args:
-        name (str): The name of the item.
-        description (str): The description of the item.
+        item_data (ItemCreate): Pydantic model containing the name and description of the item.
 
     Returns:
         Item: The created Item object.
 
     Raises:
-        ValueError: If the name or description is empty.
         ItemError: If the item creation fails unexpectedly.
     """
-    if not name:
-        raise ValueError("Name cannot be empty.")
-    if not description:
-        raise ValueError("Description cannot be empty.")
-    
     try:
-        item = await Item.create(name=name, description=description)
+        return await Item.create(name=item_data.name, description=item_data.description)
     except Exception as e:
         raise ItemError(f"Failed to create item: {str(e)}")
-    
-    return item
 
 
+@handle_exceptions
 async def get_items(limit: int = 10, offset: int = 0) -> List[Item]:
     """
     Retrieve a paginated list of items from the database.
@@ -52,7 +47,9 @@ async def get_items(limit: int = 10, offset: int = 0) -> List[Item]:
         raise ItemError(f"Failed to retrieve items: {str(e)}")
 
 
-async def get_item_by_id(item_id: int) -> Optional[Item]:
+
+@handle_exceptions
+async def get_item_by_id(item_id: int) -> Item:
     """
     Retrieve a single item by its ID.
 
@@ -60,18 +57,23 @@ async def get_item_by_id(item_id: int) -> Optional[Item]:
         item_id (int): The ID of the item to retrieve.
 
     Returns:
-        Optional[Item]: The Item object if found, otherwise None.
+        Item: The item with the given ID.
 
     Raises:
-        ItemError: If the retrieval process encounters an error.
+        ItemNotFoundError: If the item with the given ID does not exist.
+        ItemError: If a general error occurs during retrieval.
     """
     try:
-        return await Item.get_or_none(id=item_id)
+        item = await Item.get_or_none(id=item_id)
+        if not item:
+            raise ItemNotFoundError(f"Item with ID {item_id} not found.")
+        return item
     except Exception as e:
         raise ItemError(f"Failed to retrieve item by ID {item_id}: {str(e)}")
 
 
-async def update_item(item_id: int, **updates) -> Optional[Item]:
+@handle_exceptions
+async def update_item(item_id: int, item_data: ItemUpdate) -> Optional[Item]:
     """
     Update fields of an item dynamically in the database.
 
@@ -89,43 +91,36 @@ async def update_item(item_id: int, **updates) -> Optional[Item]:
     item = await Item.get_or_none(id=item_id)
     
     if item:
-        # Check for empty 'name' or 'description' and raise ValueError
-        if 'name' in updates and not updates['name'].strip():
-            raise ValueError("Name cannot be empty.")
-        if 'description' in updates and not updates['description'].strip():
-            raise ValueError("Description cannot be empty.")
+        if item_data.name is not None:
+            item.name = item_data.name.strip()
+        if item_data.description is not None:
+            item.description = item_data.description.strip()
 
-        # Update only fields that are provided (not None)
-        try:
-            for field, value in updates.items():
-                if value is not None:
-                    setattr(item, field, value)
-            await item.save()
-            return item
-        except Exception as e:
-            raise ItemError(f"Failed to update item with ID {item_id}: {str(e)}")
+        await item.save()
+        return item
     else:
-        return None
+        raise ItemNotFoundError(f"Item with ID {item_id} not found.")
 
 
 async def delete_item(item_id: int) -> bool:
     """
-    Delete an item by its ID.
-
-    Args:
-        item_id (int): The ID of the item to delete.
-
+    Deletes an item by ID.
+    
     Returns:
-        bool: True if the item was found and deleted, otherwise False.
-
+    - True if the item is successfully deleted.
+    
     Raises:
-        ItemError: If the deletion process fails unexpectedly.
+    - ItemNotFoundError if the item does not exist.
+    - ItemError for other database issues.
     """
     try:
         item = await Item.get_or_none(id=item_id)
-        if item:
-            await item.delete()
-            return True
-        return False
+        if item is None:
+            raise ItemNotFoundError(f"Item with ID {item_id} not found.")
+        await item.delete()
+        return True
+    except ItemNotFoundError:
+        raise  # Let the ItemNotFoundError propagate
     except Exception as e:
         raise ItemError(f"Failed to delete item with ID {item_id}: {str(e)}")
+

@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 
+
 from httpx import AsyncClient
 from app.main import app  # Adjust based on your project structure
 
@@ -12,10 +13,12 @@ from app.crud.item import (
     delete_item,
     ItemError
 )
-
+from app.schemas.item import ItemCreate
 from app.db.models import Item 
 from tortoise import Tortoise
 from tortoise.exceptions import OperationalError
+from app.utils.exceptions import ItemNotFoundError, ItemError
+
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -43,6 +46,8 @@ async def initialize_tests():
     yield
     await Tortoise.close_connections()
 
+
+
 @pytest.mark.asyncio
 async def test_get_item_from_db():
     """
@@ -59,9 +64,9 @@ async def test_get_item_from_db():
     Result(s):
     - Test passes if the item is successfully retrieved, and its details match the created item.
     """
-    # Step 1: Create an item
-    item_data = {"name": "Get Item", "description": "Retrieve this item"}
-    created_item = await create_item(**item_data)
+    # Step 1: Create an item using the ItemCreate Pydantic model
+    item_data = ItemCreate(name="Get Item", description="Retrieve this item")
+    created_item = await create_item(item_data)
 
     # Step 2: Retrieve the item by its ID
     item = await get_item_by_id(created_item.id)
@@ -71,26 +76,33 @@ async def test_get_item_from_db():
     assert item.name == "Get Item"
     assert item.description == "Retrieve this item"
 
+
+
 @pytest.mark.asyncio
 async def test_get_item_from_db_not_found():
     """
     Test Case: Try retrieving an item that doesn't exist in the database.
     
-    This test ensures that the `get_item_by_id` function returns `None` if an item with 
-    the specified ID does not exist in the database.
+    This test ensures that the `get_item_by_id` function raises `ItemError` 
+    if an item with the specified ID does not exist in the database.
 
     Steps:
     1. Attempt to retrieve an item with a non-existent ID.
-    2. Assert that the function returns `None`.
+    2. Assert that the function raises `ItemError`.
 
     Result(s):
-    - Test passes if `get_item_by_id` returns `None` for a non-existent item.
+    - Test passes if `ItemError` is raised for a non-existent item.
     """
-    # Step 1: Attempt to retrieve an item with a non-existent ID
-    item = await get_item_by_id(999)
+    # Step 1: Attempt to retrieve an item with a non-existent ID and assert the exception is raised
+    with pytest.raises(ItemError) as exc_info:
+        await get_item_by_id(999)
+    
+    # Step 2: Verify that the error message includes information about the missing item
+    assert "Failed to retrieve item by ID 999" in str(exc_info.value)
+    assert "Item with ID 999 not found" in str(exc_info.value)
 
-    # Step 2: Verify the function returns None
-    assert item is None
+
+
 
 @pytest.mark.asyncio
 async def test_get_items():
@@ -113,11 +125,11 @@ async def test_get_items():
     assert isinstance(items, list)
     assert len(items) == 0
 
-    # Step 2: Create multiple items
-    item_data1 = {"name": "Item 1", "description": "Description 1"}
-    item_data2 = {"name": "Item 2", "description": "Description 2"}
-    await create_item(**item_data1)
-    await create_item(**item_data2)
+    # Step 2: Create multiple items using ItemCreate Pydantic model
+    item_data1 = ItemCreate(name="Item 1", description="Description 1")
+    item_data2 = ItemCreate(name="Item 2", description="Description 2")
+    await create_item(item_data1)
+    await create_item(item_data2)
 
     # Step 3: Retrieve all items
     items = await get_items()
@@ -127,6 +139,9 @@ async def test_get_items():
     item_names = [item.name for item in items]
     assert "Item 1" in item_names
     assert "Item 2" in item_names
+
+
+
 
 @pytest.mark.asyncio
 async def test_get_items_with_invalid_parameters():
@@ -151,7 +166,11 @@ async def test_get_items_with_invalid_parameters():
         await get_items(limit=invalid_limit, offset=0)
     
     # Step 3: Verify that the exception contains the expected error message
-    assert "Failed to retrieve items" in str(exc_info.value)
+    assert "An error occurred: Failed to retrieve items: Limit should be non-negative" in str(exc_info.value)
+
+
+
+
 
 @pytest.mark.asyncio
 async def test_get_item_by_id_failure(monkeypatch):
@@ -179,6 +198,7 @@ async def test_get_item_by_id_failure(monkeypatch):
     with pytest.raises(ItemError) as exc_info:
         await get_item_by_id(item_id=123)
 
-    # Step 3: Verify that the error message includes 'Failed to retrieve item by ID'
-    assert "Failed to retrieve item by ID 123" in str(exc_info.value)
+    # Step 3: Verify that the error message includes 'An error occurred: Failed to retrieve item by ID'
+    assert "An error occurred: Failed to retrieve item" in str(exc_info.value)
     assert "Database error" in str(exc_info.value)
+

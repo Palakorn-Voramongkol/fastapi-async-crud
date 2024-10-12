@@ -3,6 +3,10 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app  # Import the FastAPI app
 from app.api.endpoints.items import create_item, get_item_by_id  # Import the CRUD operations from the correct module
 
+
+from app.crud.item import create_item  # Import the create_item method from the correct module
+from app.schemas.item import ItemCreate  # Import the Pydantic schema for item creation
+
 @pytest.mark.asyncio
 async def test_create_item_success(monkeypatch):
     """
@@ -21,11 +25,11 @@ async def test_create_item_success(monkeypatch):
     - Test passes if the item is successfully created and the returned data is as expected.
     """
     # Step 1: Mock the create_item function to simulate successful creation
-    async def mock_create_item(name: str, description: str):
-        return {"id": 1, "name": name, "description": description}
+    async def mock_create_item(item_data: ItemCreate):
+        return {"id": 1, "name": item_data.name, "description": item_data.description}
 
     # Monkeypatch the function
-    monkeypatch.setattr("app.api.endpoints.items.create_item", mock_create_item)
+    monkeypatch.setattr("app.crud.create_item", mock_create_item)
 
     # Step 2: Use AsyncClient to send the request
     transport = ASGITransport(app=app)
@@ -38,7 +42,8 @@ async def test_create_item_success(monkeypatch):
     assert "id" in data
     assert data["name"] == "Test Item"
     assert data["description"] == "This is a test item"
-    
+
+
 @pytest.mark.asyncio
 async def test_create_item_failure(monkeypatch):
     """
@@ -57,10 +62,10 @@ async def test_create_item_failure(monkeypatch):
     - Test passes if the exception is correctly handled and the appropriate error message is returned.
     """
     # Step 1: Mock the create_item function to simulate an exception
-    async def mock_create_item(name: str, description: str):
+    async def mock_create_item(item_data: ItemCreate):
         raise Exception("Simulated exception")
 
-    monkeypatch.setattr("app.api.endpoints.items.create_item", mock_create_item)
+    monkeypatch.setattr("app.crud.create_item", mock_create_item)
 
     # Step 2: Send the POST request
     transport = ASGITransport(app=app)
@@ -70,6 +75,7 @@ async def test_create_item_failure(monkeypatch):
     # Step 3: Verify the response status and error message
     assert response.status_code == 400
     assert response.json() == {"detail": "Failed to create item: Simulated exception"}
+
 
 @pytest.mark.asyncio
 async def test_create_item_name_too_long():
@@ -96,11 +102,12 @@ async def test_create_item_name_too_long():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.post("/items/", json=item_data)
-    
+
     # Step 3: Assert validation error response
     assert response.status_code == 422
     response_data = response.json()
-    assert "Value error" in response_data["detail"][0]["msg"]
+    assert "value_error" in response_data["detail"][0]["type"]
+
 
 @pytest.mark.asyncio
 async def test_create_item_description_too_long():
@@ -131,4 +138,4 @@ async def test_create_item_description_too_long():
     # Step 3: Assert validation error response
     assert response.status_code == 422
     response_data = response.json()
-    assert "Value error" in response_data["detail"][0]["msg"]
+    assert "value_error" in response_data["detail"][0]["type"]
