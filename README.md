@@ -130,7 +130,12 @@ uvicorn app.main:app --reload
 This will run the server on `http://127.0.0.1:8000`.
 
 
-### 4. Run the Tests
+
+## Testing
+
+- **Unit Tests**: Test CRUD operations and other application logic.
+- **Coverage**: Ensure test coverage using Pytest's coverage plugin.
+
 
 To run the tests with coverage:
 
@@ -144,10 +149,192 @@ You can also specify `-s` for additional print output:
 pytest --cov=app --cov-report=term-missing -s
 ```
 
-## Testing
 
-- **Unit Tests**: Test CRUD operations and other application logic.
-- **Coverage**: Ensure test coverage using Pytest's coverage plugin.
+
+
+## API Usage
+
+### 1. **Create a New Item**
+
+**Endpoint:**
+```http
+POST /items/
+```
+
+**Description:**
+- Creates a new item with the provided name and description.
+
+**Request Body:**
+- `name` (string): The name of the item (required).
+- `description` (string): A detailed description of the item (required).
+
+**Response:**
+- Returns the created item with the following fields:
+  - `id`: Unique identifier of the item.
+  - `name`: Name of the item.
+  - `description`: Description of the item.
+
+**Example:**
+```bash
+curl -X 'POST' \
+  'http://localhost:8000/items/' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Sample Item",
+    "description": "This is a sample item"
+  }'
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Sample Item",
+  "description": "This is a sample item"
+}
+```
+
+### 2. **Retrieve Paginated Items**
+
+**Endpoint:**
+```http
+GET /items/
+```
+
+**Description:**
+- Retrieves a list of items with pagination.
+
+**Query Parameters:**
+- `limit` (integer, optional): Number of items to retrieve (default is 10).
+- `offset` (integer, optional): The starting index for retrieving items (default is 0).
+
+**Response:**
+- Returns a list of items, each containing:
+  - `id`: Unique identifier of the item.
+  - `name`: Name of the item.
+  - `description`: Description of the item.
+
+**Example:**
+```bash
+curl -X 'GET' 'http://localhost:8000/items/?limit=5&offset=0'
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Sample Item",
+    "description": "This is a sample item"
+  },
+  ...
+]
+```
+
+### 3. **Retrieve an Item by ID**
+
+**Endpoint:**
+```http
+GET /items/{id}
+```
+
+**Description:**
+- Retrieves a specific item by its unique identifier.
+
+**Path Parameter:**
+- `id` (integer): The ID of the item to retrieve.
+
+**Response:**
+- Returns the item with the given ID:
+  - `id`: Unique identifier of the item.
+  - `name`: Name of the item.
+  - `description`: Description of the item.
+
+**Example:**
+```bash
+curl -X 'GET' 'http://localhost:8000/items/1'
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Sample Item",
+  "description": "This is a sample item"
+}
+```
+
+### 4. **Update an Item**
+
+**Endpoint:**
+```http
+PUT /items/{id}
+```
+
+**Description:**
+- Updates an existing item with the given ID. The name or description can be updated.
+
+**Path Parameter:**
+- `id` (integer): The ID of the item to update.
+
+**Request Body:**
+- `name` (string, optional): Updated name of the item.
+- `description` (string, optional): Updated description of the item.
+
+**Response:**
+- Returns the updated item with the following fields:
+  - `id`: Unique identifier of the item.
+  - `name`: Updated name of the item.
+  - `description`: Updated description of the item.
+
+**Example:**
+```bash
+curl -X 'PUT' \
+  'http://localhost:8000/items/1' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Updated Item",
+    "description": "Updated item description"
+  }'
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Updated Item",
+  "description": "Updated item description"
+}
+```
+
+### 5. **Delete an Item**
+
+**Endpoint:**
+```http
+DELETE /items/{id}
+```
+
+**Description:**
+- Deletes an existing item by its ID.
+
+**Path Parameter:**
+- `id` (integer): The ID of the item to delete.
+
+**Response:**
+- A success message confirming that the item was deleted.
+
+**Example:**
+```bash
+curl -X 'DELETE' 'http://localhost:8000/items/1'
+```
+
+**Response:**
+```json
+{
+  "message": "Item deleted successfully"
+}
+```
+
 
 ## Author
 
