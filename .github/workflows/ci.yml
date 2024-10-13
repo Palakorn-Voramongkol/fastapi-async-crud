@@ -30,6 +30,10 @@ jobs:
       run: |
         docker build -t pv-fastapi-async-crud:v0.7 .
 
+    - name: List files in /app
+      run: |
+        docker run --rm pv-fastapi-async-crud:v0.7 ls -la /app
+
     - name: Run tests
       run: |
         docker run --rm pv-fastapi-async-crud:v0.7 pytest
