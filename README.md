@@ -76,6 +76,12 @@ Contains the core application logic.
   - `constants.py`: all constants used in the application.
   - `exception.py`: all exception classes used in the application.
 
+- **images/** Screenshots
+  - `github_ci_build_action.png`: Github Action when build the docker package CI 
+  - `github_ci_build_log.png`: Github Action build result
+  - `api_swagger.png`: Swagger API
+
+
 ### 2. `tests/`
 Contains the test cases for the application.
 
@@ -101,6 +107,7 @@ Configuration file for Pytest, including plugins and async mode settings.
 
 ### 8. `mypy.ini`
 Configuration file for Mypy.
+
 
 ## Setup Development Instructions
 
