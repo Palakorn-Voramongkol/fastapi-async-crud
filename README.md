@@ -1,4 +1,4 @@
-# FastAPI Asynchronous CRUD Application
+# FastAPI Asynchronous CRUD Application v1.0.0
 
 This project is a FastAPI-based application that demonstrates asynchronous CRUD operations using SQLite and Pytest for testing. It follows clean code practices and includes proper test coverage.
 
