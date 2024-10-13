@@ -2,7 +2,7 @@
 
 from app.db.models import Item
 from typing import Optional, List
-from app.schemas.item import ItemCreate, ItemResponse, ItemUpdate
+from app.schemas.item import ItemCreate, ItemUpdate
 from app.utils.exceptions import handle_exceptions, ItemNotFoundError, ItemError
 
 

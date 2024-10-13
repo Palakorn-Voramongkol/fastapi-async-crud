@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from app.utils.constants import MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, MIN_DESCRIPTION_LENGTH, MIN_NAME_LENGTH
 

@@ -2,21 +2,16 @@ import pytest
 import pytest_asyncio
 
 
-from httpx import AsyncClient
 from app.main import app  # Adjust based on your project structure
 
 from app.crud.item import (
     create_item,
     get_items,
     get_item_by_id,
-    update_item,
-    delete_item,
 )
 from app.schemas.item import ItemCreate
-from app.db.models import Item 
 from tortoise import Tortoise
-from tortoise.exceptions import OperationalError
-from app.utils.exceptions import ItemNotFoundError, ItemError
+from app.utils.exceptions import ItemError
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)

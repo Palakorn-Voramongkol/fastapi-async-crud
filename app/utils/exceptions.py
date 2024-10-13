@@ -8,13 +8,11 @@ class ItemError(Exception):
     """
     Custom Exception for Item CRUD operations.
     """
-    pass
 
 class ItemNotFoundError(Exception):
     """
     Raised when an item is not found in the database.
     """
-    pass
 
 def handle_exceptions(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
     """

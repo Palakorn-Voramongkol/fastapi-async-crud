@@ -1,7 +1,5 @@
 import pytest
-import pytest_asyncio
 from app.database import init_db, close_db
-from tortoise.exceptions import OperationalError, ConfigurationError
 from unittest.mock import AsyncMock, patch
 
 @pytest.mark.asyncio

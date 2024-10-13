@@ -6,17 +6,12 @@ from app.main import app  # Adjust based on your project structure
 
 from app.crud.item import (
     create_item,
-    get_items,
     get_item_by_id,
-    update_item,
-    delete_item,
-    ItemError
+    update_item
 )
 from pydantic import ValidationError
 from fastapi import status  # Import status from FastAPI
-from app.db.models import Item 
 from tortoise import Tortoise
-from tortoise.exceptions import OperationalError
 from app.schemas.item import ItemCreate, ItemUpdate
 from app.crud.item import create_item, update_item
 
