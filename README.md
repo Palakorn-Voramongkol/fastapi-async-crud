@@ -8,7 +8,7 @@ This project is a FastAPI-based application that demonstrates asynchronous CRUD 
 palakorn-fastapi-async-crud/
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml/
+│   │   ├── ci.yml
 ├── app/
 │   ├── api/
 │   │   ├── endpoints/
@@ -85,18 +85,22 @@ Contains the test cases for the application.
 - **test_lifespan.py**: Tests related to application lifespan events (startup/shutdown).
 - **test_schema_items.py**: Schema validation tests for the `Item` model.
 
-
-### 3. `environment.yml`
+### 3. `.github/workflows/ci.yml`
+Github action for ci
+### 4. `environment.yml`
 Environment file for setting up dependencies using Conda.
 
-### 4. `requirements.txt`
+### 5. `requirements.txt`
 Lists the required Python dependencies for the project.
 
-### 5. `.coveragerc`
+### 6. `.coveragerc`
 Configuration file for test coverage.
 
-### 6. `pytest.ini`
+### 7. `pytest.ini`
 Configuration file for Pytest, including plugins and async mode settings.
+
+### 8. `mypy.ini`
+Configuration file for Mypy.
 
 ## Setup Development Instructions
 
