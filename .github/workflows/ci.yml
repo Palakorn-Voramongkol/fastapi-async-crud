@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build Docker image
+      run: |
+        docker build -t pv-fastapi-async-crud:v0.7 .
+
+    - name: Run tests
+      run: |
+        docker run --rm pv-fastapi-async-crud:v0.7 pytest
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: palakornv
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build and push Docker image
+      run: |
+        docker tag pv-fastapi-async-crud:v0.7 palakornv/pv-fastapi-async-crud:v0.7
+        docker push palakornv/pv-fastapi-async-crud:v0.7
