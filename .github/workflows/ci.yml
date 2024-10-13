@@ -38,7 +38,7 @@ jobs:
       uses: docker/login-action@v2  # Updated to the latest version
       with:
         username: palakornv
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+        password: ${{ fksftQ6l8FkGkcgoVMxjsV2Z1qtWcSZrX8AhasIhdvvRizOtXbvTKv9sk1frxpsx }}
 
     - name: Build and push Docker image
       run: |
