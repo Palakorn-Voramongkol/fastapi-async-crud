@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Change this if your main branch has a different name
+      - main
   pull_request:
     branches:
       - main
@@ -14,10 +14,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # Updated to the latest version
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v4  # This action is compatible with Node 20
+      uses: actions/setup-python@v4
       with:
         python-version: '3.12'
 
@@ -35,10 +35,10 @@ jobs:
         docker run --rm pv-fastapi-async-crud:v0.7 pytest
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@v2  # Updated to the latest version
+      uses: docker/login-action@v2
       with:
         username: palakornv
-        password: ${{ secrets.DOCKER_HUB_TOKEN }} 
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Build and push Docker image
       run: |
