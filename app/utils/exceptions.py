@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Callable, Any, Awaitable
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ class ItemNotFoundError(Exception):
     """
     pass
 
-def handle_exceptions(func):
+def handle_exceptions(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
     """
     Decorator to handle exceptions in CRUD operations.
 
@@ -26,7 +27,7 @@ def handle_exceptions(func):
         Callable: The wrapped function.
     """
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return await func(*args, **kwargs)
         except ItemNotFoundError:

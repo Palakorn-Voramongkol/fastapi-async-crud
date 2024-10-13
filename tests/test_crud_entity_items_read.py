@@ -11,7 +11,6 @@ from app.crud.item import (
     get_item_by_id,
     update_item,
     delete_item,
-    ItemError
 )
 from app.schemas.item import ItemCreate
 from app.db.models import Item 
