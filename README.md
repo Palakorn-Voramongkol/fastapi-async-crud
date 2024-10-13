@@ -6,7 +6,9 @@ This project is a FastAPI-based application that demonstrates asynchronous CRUD 
 
 ```plaintext
 palakorn-fastapi-async-crud/
-├── .vscode/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml/
 ├── app/
 │   ├── api/
 │   │   ├── endpoints/
@@ -42,11 +44,10 @@ palakorn-fastapi-async-crud/
 │   ├── test_database.py
 │   ├── test_lifespan.py
 │   ├── test_schema_items.py
-├── .coverage
 ├── .coveragerc
 ├── .gitignore
 ├── environment.yml
-├── example.db
+├── mypy.ini
 ├── pytest.ini
 ├── README.md
 ├── requirements.txt
