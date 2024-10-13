@@ -123,7 +123,7 @@ Install the required dependencies using pip:
 pip install -r requirements.txt
 ```
 
-### 3. Run the Application
+### 3. Run the Application as Localhost
 
 To start the FastAPI application:
 
@@ -133,19 +133,19 @@ uvicorn app.main:app --reload
 
 This will run the server on `http://127.0.0.1:8000`.
 
-## Run in Docker
+## Run in Docker Container
 
-### 1. Build the Docker Image
+### 1. Build the Container Image
 ```bash
 docker build -t pv-fastapi-async-crud . 
 ```
 
-### 2. Run the Docker Container
+### 2. Start the Container
 ```bash
 docker run -d --name pv_fastapi_async_crud -p 8000:8000 pv-fastapi-async-crud
 ```
 
-### 3. Access the Docker
+### 3. Access the Container
 ```bash
 http://localhost:8000
 
