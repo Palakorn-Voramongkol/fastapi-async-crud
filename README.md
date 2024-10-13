@@ -162,30 +162,37 @@ http://localhost:8000/docs
 
 ### Code Coverage: Test CRUD operations and other application logic.
 
-| File                                   | Statements | Missing | Excluded | Coverage |
-| -------------------------------------- | ---------- | ------- | -------- | -------- |
-| app/api/endpoints/items.py             | 45         | 0       | 0        | 100%     |
-| app/crud/item.py                       | 49         | 0       | 0        | 100%     |
-| app/database.py                        | 6          | 0       | 0        | 100%     |
-| app/db/models.py                       | 7          | 0       | 0        | 100%     |
-| app/main.py                            | 11         | 3       | 0        | 73%      |
-| app/schemas/item.py                    | 44         | 0       | 0        | 100%     |
-| app/utils/constants.py                 | 4          | 0       | 0        | 100%     |
-| app/utils/exceptions.py                | 17         | 0       | 0        | 100%     |
-| tests/__init__.py                      | 0          | 0       | 0        | 100%     |
-| tests/conftest.py                      | 8          | 0       | 0        | 100%     |
-| tests/test_crud_api_items_create.py    | 48         | 1       | 0        | 98%      |
-| tests/test_crud_api_items_delete.py    | 44         | 0       | 0        | 100%     |
-| tests/test_crud_api_items_read.py      | 38         | 0       | 0        | 100%     |
-| tests/test_crud_api_items_update.py    | 52         | 1       | 0        | 98%      |
-| tests/test_crud_entity_items_create.py | 73         | 4       | 0        | 95%      |
-| tests/test_crud_entity_items_delete.py | 48         | 0       | 0        | 100%     |
-| tests/test_crud_entity_items_read.py   | 59         | 0       | 0        | 100%     |
-| tests/test_crud_entity_items_update.py | 87         | 2       | 0        | 98%      |
-| tests/test_database.py                 | 21         | 2       | 0        | 90%      |
-| tests/test_lifespan.py                 | 32         | 3       | 0        | 91%      |
-| tests/test_schema_items.py             | 39         | 0       | 0        | 100%     |
-| **Total**                              | **732**    | **16**  | **0**    | **98%**  |
+| File                       | Function                        | Statements | Missing | Excluded | Coverage |
+| -------------------------- | ------------------------------- | ---------- | ------- | -------- | -------- |
+| app/api/endpoints/items.py | create_item_endpoint            | 5          | 0       | 0        | 100%     |
+| app/api/endpoints/items.py | read_items_endpoint             | 2          | 0       | 0        | 100%     |
+| app/api/endpoints/items.py | read_item_endpoint              | 4          | 0       | 0        | 100%     |
+| app/api/endpoints/items.py | update_item_endpoint            | 8          | 0       | 0        | 100%     |
+| app/api/endpoints/items.py | delete_item_endpoint            | 10         | 0       | 0        | 100%     |
+| app/api/endpoints/items.py | (no function)                   | 15         | 0       | 0        | 100%     |
+| app/crud/item.py           | create_item                     | 4          | 0       | 0        | 100%     |
+| app/crud/item.py           | get_items                       | 4          | 0       | 0        | 100%     |
+| app/crud/item.py           | get_item_by_id                  | 7          | 0       | 0        | 100%     |
+| app/crud/item.py           | update_item                     | 9          | 0       | 0        | 100%     |
+| app/crud/item.py           | delete_item                     | 10         | 0       | 0        | 100%     |
+| app/crud/item.py           | (no function)                   | 13         | 0       | 0        | 100%     |
+| app/database.py            | init_db                         | 2          | 0       | 0        | 100%     |
+| app/database.py            | close_db                        | 1          | 0       | 0        | 100%     |
+| app/database.py            | (no function)                   | 3          | 0       | 0        | 100%     |
+| app/db/models.py           | (no function)                   | 7          | 0       | 0        | 100%     |
+| app/main.py                | lifespan                        | 3          | 3       | 0        | 0%       |
+| app/main.py                | (no function)                   | 9          | 0       | 0        | 100%     |
+| app/schemas/item.py        | ItemCreate.validate_name        | 5          | 0       | 0        | 100%     |
+| app/schemas/item.py        | ItemCreate.validate_description | 5          | 0       | 0        | 100%     |
+| app/schemas/item.py        | ItemUpdate.validate_name        | 6          | 0       | 0        | 100%     |
+| app/schemas/item.py        | ItemUpdate.validate_description | 6          | 0       | 0        | 100%     |
+| app/schemas/item.py        | (no function)                   | 22         | 0       | 0        | 100%     |
+| app/utils/constants.py     | (no function)                   | 4          | 0       | 0        | 100%     |
+| app/utils/exceptions.py    | handle_exceptions               | 3          | 0       | 0        | 100%     |
+| app/utils/exceptions.py    | handle_exceptions.wrapper       | 6          | 0       | 0        | 100%     |
+| app/utils/exceptions.py    | (no function)                   | 7          | 0       | 0        | 100%     |
+| **Total**                  |                                 | **180**    | **3**   | **0**    | **98%**  |
+
 
 
 
