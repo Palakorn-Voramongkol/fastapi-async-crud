@@ -28,11 +28,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t pv-fastapi-async-crud:v0.7 .
+        docker build -t pv-fastapi-async-crud:v1.0.0 .
 
     - name: Run tests
       run: |
-        docker run --rm pv-fastapi-async-crud:v0.7 pytest
+        docker run --rm pv-fastapi-async-crud:v1.0.0 pytest
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2  # Already compatible with Node.js 20
@@ -42,5 +42,5 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker tag pv-fastapi-async-crud:v0.7 palakornv/pv-fastapi-async-crud:v0.7
-        docker push palakornv/pv-fastapi-async-crud:v0.7
+        docker tag pv-fastapi-async-crud:v1.0.0 palakornv/pv-fastapi-async-crud:v1.0.0
+        docker push palakornv/pv-fastapi-async-crud:v1.0.0
