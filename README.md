@@ -137,12 +137,12 @@ This will run the server on `http://127.0.0.1:8000`.
 
 ### 1. Build the Container Image
 ```bash
-docker build -t pv-fastapi-async-crud . 
+docker build --build-arg RUN_TESTS=false -t pv-fastapi-async-crud:v0.7 .
 ```
 
 ### 2. Start the Container
 ```bash
-docker run -d --name pv_fastapi_async_crud -p 8000:8000 pv-fastapi-async-crud
+docker run -d -p 8000:8000 pv-fastapi-async-crud:v0.7
 ```
 
 ### 3. Access the Container
