@@ -123,7 +123,7 @@ Install the required dependencies using pip:
 pip install -r requirements.txt
 ```
 
-### 3. Run the Application
+## Run the Application
 
 To start the FastAPI application:
 

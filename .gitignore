@@ -11,6 +11,12 @@ env/
 *.db
 *.db-shm
 *.db-wal
+.vscode
+.env
+*.env
+*.pyc
+*.pyo
+*.pyd
 
 # Ignore logs and cache
 *.log
