@@ -34,6 +34,7 @@ palakorn-fastapi-async-crud/
 │   │   ├── github_ci_build_action.png
 │   │   ├── github_ci_build_log.png
 │   │   ├── api_swagger.png
+│   │   ├── built_docker_image_docker_hub
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py
@@ -84,6 +85,7 @@ Contains the core application logic.
   - `github_ci_build_action.png`: Github Action when build the docker package CI 
   - `github_ci_build_log.png`: Github Action build result
   - `api_swagger.png`: Swagger API
+  - `built_docker_image_docker_hub`:Successfully built Docker image in Docker hub
 
 
 ### 2. `tests/`
