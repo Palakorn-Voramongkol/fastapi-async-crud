@@ -97,7 +97,7 @@ Configuration file for test coverage.
 ### 6. `pytest.ini`
 Configuration file for Pytest, including plugins and async mode settings.
 
-## Setup Instructions
+## Setup Development Instructions
 
 ### 1. Create Virtual Environment
 
@@ -123,7 +123,7 @@ Install the required dependencies using pip:
 pip install -r requirements.txt
 ```
 
-## Run the Application
+### 3. Run the Application
 
 To start the FastAPI application:
 
@@ -133,7 +133,28 @@ uvicorn app.main:app --reload
 
 This will run the server on `http://127.0.0.1:8000`.
 
+## Run in Docker
 
+### 1. Build the Docker Image
+```bash
+docker build -t pv-fastapi-async-crud . 
+```
+
+### 2. Run the Docker Container
+```bash
+docker run -d --name pv_fastapi_async_crud -p 8000:8000 pv-fastapi-async-crud
+```
+
+### 3. Access the Docker
+```bash
+http://localhost:8000
+
+```
+### 4. Access the Swagger
+```bash
+http://localhost:8000/docs
+
+```
 
 ## Testing
 
