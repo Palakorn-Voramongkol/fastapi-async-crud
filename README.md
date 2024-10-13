@@ -133,19 +133,19 @@ uvicorn app.main:app --reload
 
 This will run the server on `http://127.0.0.1:8000`.
 
-## Run in Docker Container
+## Run in Docker Environment
 
-### 1. Build the Container Image
+### 1. Build the Docker Image
 ```bash
-docker build --build-arg RUN_TESTS=false -t pv-fastapi-async-crud:v0.7 .
+docker build -t pv-fastapi-async-crud . 
 ```
 
-### 2. Start the Container
+### 2. Run the Docker Container
 ```bash
-docker run -d -p 8000:8000 pv-fastapi-async-crud:v0.7
+docker run -d --name pv_fastapi_async_crud -p 8000:8000 pv-fastapi-async-crud
 ```
 
-### 3. Access the Container
+### 3. Access the Docker
 ```bash
 http://localhost:8000
 
