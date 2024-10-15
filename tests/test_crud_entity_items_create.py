@@ -179,7 +179,7 @@ async def test_create_items_with_same_name():
 
 
 
-'''
+
 @pytest.mark.asyncio
 async def test_create_item_database_error(monkeypatch):
     """
@@ -213,7 +213,7 @@ async def test_create_item_database_error(monkeypatch):
     # Step 4: Check that the error message is as expected
     assert "An error occurred: Failed to create item: Database error" in str(exc_info.value)
 
-'''
+
 
 @pytest.mark.asyncio
 async def test_create_item_with_invalid_data():

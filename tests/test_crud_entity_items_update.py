@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 
 from httpx import AsyncClient
+from app.db.models import Item
 from app.main import app  # Adjust based on your project structure
 
 from app.crud.item import (
@@ -19,7 +20,7 @@ from app.api.endpoints.items import get_item_by_id, update_item  # Import necess
 
 
 
-from app.utils.exceptions import ItemNotFoundError
+from app.utils.exceptions import ItemError, ItemNotFoundError
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -202,7 +203,7 @@ async def test_update_item_invalid_data():
         update_data = ItemUpdate(name="Valid Name", description="")
         await update_item(created_item.id, update_data)
 
-'''
+
 @pytest.mark.asyncio
 async def test_update_item_database_error(monkeypatch):
     """
@@ -238,7 +239,7 @@ async def test_update_item_database_error(monkeypatch):
     
     # Step 4: Assert that the error message matches the expected message
     assert "An error occurred: Database error" in str(exc_info.value)
-'''
+
 
 @pytest.mark.asyncio
 async def test_update_item_endpoint_failures(monkeypatch):
