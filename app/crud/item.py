@@ -100,7 +100,7 @@ async def update_item(item_id: int, item_data: ItemUpdate) -> Optional[Item]:
     else:
         raise ItemNotFoundError(f"Item with ID {item_id} not found.")
 
-
+@handle_exceptions
 async def delete_item(item_id: int) -> bool:
     """
     Delete an item by its ID.
