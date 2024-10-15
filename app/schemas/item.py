@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from app.utils.constants import MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, MIN_DESCRIPTION_LENGTH, MIN_NAME_LENGTH
 
@@ -7,54 +7,70 @@ class ItemCreate(BaseModel):
     Pydantic model for creating a new item with custom validation error messages.
 
     Attributes:
-        name (str): The name of the item to be created (non-empty, with a custom error message).
-        description (str): A detailed description of the item (non-empty, with a custom error message).
+        name (str): The name of the item to be created (non-empty, with length constraints).
+        description (str): A detailed description of the item (non-empty, with length constraints).
     """
     
-    # Use Field to define min and max length for name and description
+    # Use Field to define the name and description with no length validation here, it will be done in validators
     name: str 
     description: str
 
     # Custom field validator for 'name'
-    # This method is automatically triggered when the `name` field is set during validation.
     @field_validator("name")
-    def validate_name(cls, value):
-        # Validate that the name is at least MIN_NAME_LENGTH characters
+    def validate_name(cls, value: str) -> str:
+        """
+        Validate the 'name' field.
+
+        Ensures that the name has a minimum length of MIN_NAME_LENGTH and 
+        does not exceed MAX_NAME_LENGTH.
+
+        Raises:
+            ValueError: If the length constraints are not met.
+
+        Returns:
+            str: The validated name.
+        """
         if len(value) < MIN_NAME_LENGTH:
             raise ValueError(f"Name must be at least {MIN_NAME_LENGTH} character(s)")
-        # Validate that the name does not exceed MAX_NAME_LENGTH characters
         if len(value) > MAX_NAME_LENGTH:
             raise ValueError(f"Name must not exceed {MAX_NAME_LENGTH} character(s)")
-        # Return the validated value
         return value
     
     # Custom field validator for 'description'
     @field_validator("description")
-    def validate_description(cls, value):
-        # Strip leading/trailing spaces and ensure the description meets the minimum length
+    def validate_description(cls, value: str) -> str:
+        """
+        Validate the 'description' field.
+
+        Strips leading/trailing spaces from the description and ensures that it has 
+        a minimum length of MIN_DESCRIPTION_LENGTH and does not exceed MAX_DESCRIPTION_LENGTH.
+
+        Raises:
+            ValueError: If the length constraints are not met.
+
+        Returns:
+            str: The validated description.
+        """
         if len(value.strip()) < MIN_DESCRIPTION_LENGTH:
             raise ValueError(f"Description must be at least {MIN_DESCRIPTION_LENGTH} character(s)")
-        # Ensure the description does not exceed the maximum length
         if len(value) > MAX_DESCRIPTION_LENGTH:
             raise ValueError(f"Description must not exceed {MAX_DESCRIPTION_LENGTH} character(s)")
-        # Return the validated value
         return value
 
 
 class ItemResponse(BaseModel):
     """
-    Pydantic model for returning an item in responses.
+    Pydantic model for returning an item in API responses.
 
     Attributes:
         id (int): The unique identifier of the item.
         name (str): The name of the item.
         description (str): A detailed description of the item.
-    
+
     Configuration:
-        model_config (ConfigDict): Configuration to enable populating the model directly from database attributes.
+        model_config (ConfigDict): Enables population of the model directly from database attributes.
     """
 
-    # Fields returned in API responses
     id: int
     name: str
     description: str
@@ -72,36 +88,49 @@ class ItemUpdate(BaseModel):
         description (Optional[str]): The updated description of the item (optional, can be omitted).
     """
     
-    # Fields that can be updated are optional. If omitted, they will default to None.
     name: Optional[str] = None
     description: Optional[str] = None
 
     # Custom field validator for 'name'
-    # This validator is triggered only when the `name` field is explicitly provided in the input.
     @field_validator("name")
-    def validate_name(cls, value):
-        # If the field is provided (i.e., not None), perform validation
+    def validate_name(cls, value: Optional[str]) -> Optional[str]:
+        """
+        Validate the 'name' field if provided.
+
+        Ensures that the name, if provided, has a minimum length of MIN_NAME_LENGTH and 
+        does not exceed MAX_NAME_LENGTH.
+
+        Raises:
+            ValueError: If the length constraints are not met.
+
+        Returns:
+            Optional[str]: The validated name or None.
+        """
         if value is not None:
-            # Validate that the name meets the minimum length requirement
             if len(value.strip()) < MIN_NAME_LENGTH:
                 raise ValueError(f"Name must be at least {MIN_NAME_LENGTH} character(s)")
-            # Validate that the name does not exceed the maximum length
             if len(value) > MAX_NAME_LENGTH:
                 raise ValueError(f"Name must not exceed {MAX_NAME_LENGTH} character(s)")
-        # Return the validated value
         return value
     
     # Custom field validator for 'description'
-    # This validator is triggered only when the `description` field is explicitly provided in the input.
     @field_validator("description")
-    def validate_description(cls, value):
-        # If the field is provided (i.e., not None), perform validation
+    def validate_description(cls, value: Optional[str]) -> Optional[str]:
+        """
+        Validate the 'description' field if provided.
+
+        Strips leading/trailing spaces from the description and ensures that it has a minimum length 
+        of MIN_DESCRIPTION_LENGTH and does not exceed MAX_DESCRIPTION_LENGTH.
+
+        Raises:
+            ValueError: If the length constraints are not met.
+
+        Returns:
+            Optional[str]: The validated description or None.
+        """
         if value is not None:
-            # Validate that the description meets the minimum length requirement
             if len(value.strip()) < MIN_DESCRIPTION_LENGTH:
                 raise ValueError(f"Description must be at least {MIN_DESCRIPTION_LENGTH} character(s)")
-            # Validate that the description does not exceed the maximum length
             if len(value) > MAX_DESCRIPTION_LENGTH:
                 raise ValueError(f"Description must not exceed {MAX_DESCRIPTION_LENGTH} character(s)")
-        # Return the validated value
         return value

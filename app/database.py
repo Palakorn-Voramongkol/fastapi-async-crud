@@ -1,8 +1,7 @@
 # app/database.py
-
 from tortoise import Tortoise
 
-async def init_db(db_url='sqlite://./example.db'):
+async def init_db(db_url: str = 'sqlite://./example.db') -> None:
     """
     Initialize the database connection and generate schemas.
 
@@ -18,7 +17,7 @@ async def init_db(db_url='sqlite://./example.db'):
     )
     await Tortoise.generate_schemas()
 
-async def close_db():
+async def close_db() -> None:
     """
     Close all active database connections.
 

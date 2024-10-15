@@ -1,15 +1,11 @@
 import pytest
 import pytest_asyncio
 
-from httpx import AsyncClient
 from app.main import app  # Adjust based on your project structure
-from app.crud.item import create_item, get_items, get_item_by_id, update_item, delete_item, ItemError
-from app.db.models import Item 
+from app.crud.item import create_item, get_items, ItemError
 from tortoise import Tortoise
-from tortoise.exceptions import OperationalError
 from app.schemas.item import ItemCreate
 from pydantic import ValidationError
-from unittest.mock import AsyncMock, patch
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def initialize_tests():
@@ -183,7 +179,7 @@ async def test_create_items_with_same_name():
 
 
 
-'''
+
 @pytest.mark.asyncio
 async def test_create_item_database_error(monkeypatch):
     """
@@ -217,7 +213,7 @@ async def test_create_item_database_error(monkeypatch):
     # Step 4: Check that the error message is as expected
     assert "An error occurred: Failed to create item: Database error" in str(exc_info.value)
 
-'''
+
 
 @pytest.mark.asyncio
 async def test_create_item_with_invalid_data():
