@@ -5,7 +5,7 @@ This project is a FastAPI-based application that demonstrates asynchronous CRUD 
 ## Project Structure
 
 ```plaintext
-palakorn-fastapi-async-crud/
+fastapi-async-crud/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml
