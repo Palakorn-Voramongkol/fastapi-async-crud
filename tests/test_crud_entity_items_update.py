@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 
 from httpx import AsyncClient
+from httpx._transports.asgi import ASGITransport
 from app.db.models import Item
 from app.main import app  # Adjust based on your project structure
 
@@ -263,7 +264,7 @@ async def test_update_item_endpoint_failures(monkeypatch):
 
     monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id_404)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as ac:
         response = await ac.put("/items/9999", json={"name": "Updated Name", "description": "Updated Description"})
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert "Item not found" in response.json()["detail"]
@@ -275,13 +276,14 @@ async def test_update_item_endpoint_failures(monkeypatch):
     monkeypatch.setattr("app.api.endpoints.items.get_item_by_id", mock_get_item_by_id)
 
     # Invalid Name
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as ac:
+
         response = await ac.put("/items/1", json={"name": "", "description": "Updated Description"})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "value_error" in response.json()["detail"][0]["type"]
 
     # Invalid Description
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as ac:
         response = await ac.put("/items/1", json={"name": "Updated Name", "description": ""})
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert "value_error" in response.json()["detail"][0]["type"]
@@ -293,7 +295,7 @@ async def test_update_item_endpoint_failures(monkeypatch):
 
     monkeypatch.setattr("app.api.endpoints.items.update_item", mock_update_item)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app), base_url="http://test") as ac:
         response = await ac.put("/items/1", json={"name": "Updated Name", "description": "Updated Description"})
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert "Failed to update item" in response.json()["detail"]
