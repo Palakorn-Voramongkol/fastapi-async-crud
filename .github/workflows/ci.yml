@@ -36,10 +36,10 @@ jobs:
           pip install -r requirements.txt
 
       # Step 4: Run mypy to check type hints
-      - name: Run mypy /app
+      - name: Run mypy against /app
         run: |
           pip install mypy
-          mypy your_python_package/  # Replace with the path to your Python code
+          mypy app/  # Replace with the path to your Python code
 
       # Step 5: Run tests using pytest (this is the unit test step)
       - name: Run tests
