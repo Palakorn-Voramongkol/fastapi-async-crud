@@ -1,52 +1,95 @@
 name: CI/CD Pipeline
 
+# Trigger on pull requests and pushes to main for testing
+on:
+  pull_request:
+    branches:
+      - main  # Run tests on pull requests targeting the main branch
+  push:
+    branches:
+      - main  # Run tests on direct pushes to main
+
+# Trigger for build and deploy on valid tag and release branch pushes
 on:
   push:
     tags:
-      - 'v[0-9]{2}\.[0-9]{2}\.[0-9]{2}'  # Matches tags like v10.12.01 (each section exactly 2 digits)
+      - 'v[0-9]{2}\.[0-9]{2}\.[0-9]{2}'  # Matches tags like v10.12.01
     branches:
-      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}'  # Matches branches like release/v10.12.01 (each section exactly 2 digits)
-  pull_request:
-    branches:
-      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}'  # Matches pull requests from branches like release/v10.12.01
+      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}'  # Matches branches like release/v10.12.01
 
 jobs:
-  build:
+  # Test job for pull requests and main branch pushes
+  test:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # Step 1: Checkout code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+      # Step 3: Install dependencies (from requirements.txt)
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Extract tag version
-      id: extract_tag
-      run: echo "TAG_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      # Step 4: Run tests using pytest (this is the unit test step)
+      - name: Run tests
+        run: |
+          pytest  # This runs your unit tests using pytest
 
-    - name: Build Docker image
-      run: |
-        docker build -t pv-fastapi-async-crud:${{ env.TAG_VERSION }} .
+  # Build and deploy Docker image on valid tag or release branch pushes
+  build-and-deploy:
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/release/v')
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run tests
-      run: |
-        docker run --rm pv-fastapi-async-crud:${{ env.TAG_VERSION }} pytest
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: palakornv
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      # Step 3: Install dependencies (from requirements.txt)
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Build and push Docker image
-      run: |
-        docker tag pv-fastapi-async-crud:${{ env.TAG_VERSION }} palakornv/pv-fastapi-async-crud:${{ env.TAG_VERSION }}
-        docker push palakornv/pv-fastapi-async-crud:${{ env.TAG_VERSION }}
+      # Step 4: Build Docker image with a custom tag (e.g., v1.0.0-abc1234)
+      - name: Build Docker image with custom tag
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"  # Extract tag name if it's a tag push
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"  # Extract branch name if it's a branch push
+          
+          # Define custom tag based on the event type
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            IMAGE_TAG="$TAG_NAME-${GITHUB_SHA:0:7}"
+          elif [[ $GITHUB_REF == refs/heads/release/* ]]; then
+            IMAGE_TAG="$BRANCH_NAME-${GITHUB_SHA:0:7}"
+          fi
+          
+          echo "Building Docker image with tag: $IMAGE_TAG"
+          docker build -t pv-fastapi-async-crud:$IMAGE_TAG .
+
+      # Step 5: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: palakornv  # Replace with your Docker Hub username
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}  # Docker Hub password/token stored in GitHub Secrets
+
+      # Step 6: Push Docker image to Docker Hub
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker tag pv-fastapi-async-crud:$IMAGE_TAG palakornv/pv-fastapi-async-crud:$IMAGE_TAG
+          docker push palakornv/pv-fastapi-async-crud:$IMAGE_TAG
+          echo "Pushed Docker image with tag: $IMAGE_TAG"
