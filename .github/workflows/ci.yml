@@ -35,7 +35,13 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run tests using pytest (this is the unit test step)
+      # Step 4: Run mypy to check type hints
+      - name: Run mypy
+        run: |
+          pip install mypy
+          mypy your_python_package/  # Replace with the path to your Python code
+
+      # Step 5: Run tests using pytest (this is the unit test step)
       - name: Run tests
         run: |
           pytest  # This runs your unit tests using pytest
