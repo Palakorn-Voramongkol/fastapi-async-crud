@@ -91,3 +91,5 @@ jobs:
           docker tag pv-fastapi-async-crud:$IMAGE_TAG palakornv/pv-fastapi-async-crud:$IMAGE_TAG
           docker push palakornv/pv-fastapi-async-crud:$IMAGE_TAG
           echo "Pushed Docker image with tag: $IMAGE_TAG"
+
+      # Step 7: Deploy to Servers
