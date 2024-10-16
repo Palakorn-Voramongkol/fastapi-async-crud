@@ -17,7 +17,6 @@ on:
 jobs:
   # Test job for pushes to main and release branches
   test:
-    if: github.event_name == 'push' # Ensure this job runs only on push events
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code from the repository
