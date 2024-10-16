@@ -1,27 +1,30 @@
 name: CI/CD Pipeline
 
-# Combine all triggers under one `on` block
+# Trigger for different events
 on:
-  pull_request:
-    branches:
-      - main # Run tests on pull requests targeting the main branch
+  # Trigger tests on push to the main branch or release branches
   push:
     branches:
-      - main # Run tests on direct pushes to main
-      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Matches branches like release/v10.12.01
-    tags:
-      - 'v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Matches tags like v10.12.01
+      - main # Run tests on direct pushes to the main branch
+      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Run tests on pushes to release branches like release/v10.12.01
+
+  # Trigger build only when release branches are merged
+  pull_request:
+    branches:
+      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Only trigger on pull requests for release branches
+    types: [closed] # Only trigger when the pull request is closed (merged)
 
 jobs:
-  # Test job for pull requests and main branch pushes
+  # Test job for pushes to main and release branches
   test:
+    if: github.event_name == 'push' # Ensure this job runs only on push events
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code from the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Python
+      # Step 2: Set up Python (you can replace this depending on your project)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -38,16 +41,16 @@ jobs:
         run: |
           pytest  # This runs your unit tests using pytest
 
-  # Build and deploy Docker image on valid tag or release branch pushes
+  # Build and deploy job only when a release branch is merged
   build-and-deploy:
-    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/release/v')
+    if: github.event.pull_request.merged == true # Ensure this job runs only when a pull request is merged
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Python
+      # Step 2: Set up Python (replace with your preferred setup)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
