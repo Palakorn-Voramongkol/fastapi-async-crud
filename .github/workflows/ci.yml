@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with SonarQube, mypy, and Tests
+name: CI/CD Pipeline with SonarQube
 
 # Trigger for different events
 on:
@@ -13,58 +13,38 @@ on:
     types: [closed] # Only trigger when the pull request is closed (merged)
 
 jobs:
-  # Test and Lint job for Python code
-  test:
+  # Test and SonarQube scan job for pushes to main and release branches
+  test-and-scan:
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code from the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Python environment
+      # Step 2: Set up Python (you can replace this depending on your project)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # Step 3: Install dependencies
+      # Step 3: Install dependencies (from requirements.txt)
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
       # Step 4: Run mypy to check type hints
-      - name: Run mypy
+      - name: Run mypy against /app
         run: |
           pip install mypy
-          mypy src/  # Replace with the correct path to your code
+          mypy app/  # Replace with the path to your Python code
 
-      # Step 5: Run tests using pytest
+      # Step 5: Run tests using pytest (this is the unit test step)
       - name: Run tests
         run: |
-          pytest
+          pytest  # This runs your unit tests using pytest
 
-  # SonarQube scan job
-  sonarcloud-scan:
-    runs-on: ubuntu-latest
-    steps:
-      # Step 1: Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Step 2: Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      # Step 3: Install dependencies (if needed)
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Step 4: SonarQube Scan
+      # Step 6: SonarQube Scan (SonarCloud in this case)
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
