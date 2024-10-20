@@ -52,7 +52,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=Palakorn-Voramongkol_fastapi-async-crud
-            -Dsonar.organization=Palakorn-Voramongkol
+            -Dsonar.organization=palakorn-voramongkol
             -Dsonar.python.version=3.12
 
   # Build and deploy job only when a release branch is merged
