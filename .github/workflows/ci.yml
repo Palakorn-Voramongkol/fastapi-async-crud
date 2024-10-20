@@ -51,8 +51,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud token stored in GitHub Secrets
         with:
           args: >
-            -Dsonar.projectKey=your-project-key
-            -Dsonar.organization=your-organization
+            -Dsonar.projectKey=fastapi-async-crud
+            -Dsonar.organization=Palakorn-Voramongkol
             -Dsonar.python.version=3.12
 
   # Build and deploy job only when a release branch is merged
