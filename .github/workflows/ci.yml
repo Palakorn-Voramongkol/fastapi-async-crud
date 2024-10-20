@@ -1,23 +1,20 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline with SonarQube
 
 # Trigger for different events
 on:
-  # Trigger tests on push to the main branch or release branches
   push:
     branches:
-      - main # Run tests on direct pushes to the main branch
-      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Run tests on pushes to release branches like release/v10.12.01
+      - main # Run tests and SonarQube scan on direct pushes to the main branch
+      - 'release/v[0-9]+\.[0-9]+\.[0-9]+' # Run on release branches
 
-  # Trigger build only when release branches are merged
   pull_request:
     branches:
-      - 'release/v[0-9]{2}\.[0-9]{2}\.[0-9]{2}' # Only trigger on pull requests for release branches
+      - 'release/v[0-9]+\.[0-9]+\.[0-9]+' # Only trigger on pull requests for release branches
     types: [closed] # Only trigger when the pull request is closed (merged)
 
 jobs:
-  # Test job for pushes to main and release branches
-  test:
-    if: github.event_name == 'push' # Ensure this job runs only on push events
+  # Test and SonarQube scan job for pushes to main and release branches
+  test-and-scan:
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code from the repository
@@ -36,10 +33,27 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run tests using pytest (this is the unit test step)
+      # Step 4: Run mypy to check type hints
+      - name: Run mypy against /app
+        run: |
+          pip install mypy
+          mypy app/  # Replace with the path to your Python code
+
+      # Step 5: Run tests using pytest (this is the unit test step)
       - name: Run tests
         run: |
           pytest  # This runs your unit tests using pytest
+
+      # Step 6: SonarQube Scan (SonarCloud in this case)
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud token stored in GitHub Secrets
+        with:
+          args: >
+            -Dsonar.projectKey=Palakorn-Voramongkol_fastapi-async-crud
+            -Dsonar.organization=palakorn-voramongkol
+            -Dsonar.python.version=3.12
 
   # Build and deploy job only when a release branch is merged
   build-and-deploy:
@@ -47,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code
-      - name: Checkout code
+      - name: Checkout codegit
         uses: actions/checkout@v4
 
       # Step 2: Set up Python (replace with your preferred setup)
@@ -62,8 +76,19 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Build Docker image with a custom tag (e.g., v1.0.0-abc1234)
-      - name: Build Docker image with custom tag
+      # Step 4: Set up Docker Buildx for multi-platform builds (for both amd64 and arm64)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 5: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: palakornv # Replace with your Docker Hub username
+          password: ${{ secrets.DOCKER_HUB_TOKEN }} # Docker Hub password/token stored in GitHub Secrets
+
+      # Step 6: Build and push multi-platform Docker image with dynamic tag
+      - name: Build and push multi-platform Docker image with custom tag
         run: |
           TAG_NAME="${GITHUB_REF#refs/tags/}"  # Extract tag name if it's a tag push
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"  # Extract branch name if it's a branch push
@@ -76,18 +101,8 @@ jobs:
           fi
 
           echo "Building Docker image with tag: $IMAGE_TAG"
-          docker build -t pv-fastapi-async-crud:$IMAGE_TAG .
 
-      # Step 5: Log in to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: palakornv # Replace with your Docker Hub username
-          password: ${{ secrets.DOCKER_HUB_TOKEN }} # Docker Hub password/token stored in GitHub Secrets
+          # Use Docker Buildx to build for both amd64 and arm64 platforms
+          docker buildx build --platform linux/amd64,linux/arm64 -t pv-fastapi-async-crud:$IMAGE_TAG --push .
 
-      # Step 6: Push Docker image to Docker Hub
-      - name: Push Docker image to Docker Hub
-        run: |
-          docker tag pv-fastapi-async-crud:$IMAGE_TAG palakornv/pv-fastapi-async-crud:$IMAGE_TAG
-          docker push palakornv/pv-fastapi-async-crud:$IMAGE_TAG
-          echo "Pushed Docker image with tag: $IMAGE_TAG"
+      # Step 7: Deploy to Servers (add your deployment steps here)
