@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout code
-      - name: Checkout code
+      - name: Checkout codegit
         uses: actions/checkout@v4
 
       # Step 2: Set up Python (replace with your preferred setup)
