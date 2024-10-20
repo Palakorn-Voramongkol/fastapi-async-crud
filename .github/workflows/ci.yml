@@ -51,7 +51,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud token stored in GitHub Secrets
         with:
           args: >
-            -Dsonar.projectKey=fastapi-async-crud
+            -Dsonar.projectKey=Palakorn-Voramongkol_fastapi-async-crud
             -Dsonar.organization=Palakorn-Voramongkol
             -Dsonar.python.version=3.12
 
